@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#2b5876"><meta name="description" content="動態旅行足跡系統">
+<title>我們的旅行足跡</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="style.css"></head>
+<body>
+<header>
+ <h1>🧭 旅行足跡</h1><span id="lock" class="lock"></span>
+ <div class="switch" role="group" aria-label="切換身份">
+  <button data-u="Ai">👧 艾庭</button><button data-u="Partner">👦 隊友</button><button data-u="shared" class="on">👩‍❤️‍👨 我們的共同足跡</button>
+ </div>
+</header>
+<nav class="tabs" aria-label="分頁">
+ <button data-t="map" class="on">🌍 全球足跡</button><button data-t="now">❄️ 當前行程</button><button data-t="past">📜 歷史足跡</button><button data-t="future">💡 未來清單</button>
+</nav>
+<main>
+ <section id="t-map" class="panel on"><div class="stats" id="stats"></div><div id="map" role="application" aria-label="足跡地圖"></div></section>
+ <section id="t-now" class="panel"></section>
+ <section id="t-past" class="panel"></section>
+ <section id="t-future" class="panel"></section>
+</main>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="map.js"></script><script src="app.js"></script>
+</body></html>

@@ -1,0 +1,14 @@
+{"trips":[
+{"id":"hokkaido-2027","owner":"shared","status":"now","private":false,"title":"北海道冬日雪國雙人自由行","startDate":"2027-01-15","endDate":"2027-01-20","days":6,"country":"日本","countryCode":"JP","cities":["札幌","美瑛","旭川","阿寒湖","釧路","小樽"],"embed":"hokkaido.html",
+"spots":[{"name":"新千歲機場","lat":42.7752,"lng":141.6923,"day":1},{"name":"美瑛","lat":43.5886,"lng":142.4666,"day":2},{"name":"旭川","lat":43.7706,"lng":142.365,"day":2},{"name":"阿寒湖","lat":43.4333,"lng":144.1,"day":3},{"name":"屈斜路湖","lat":43.5833,"lng":144.3333,"day":4},{"name":"釧路","lat":42.9849,"lng":144.3814,"day":5},{"name":"小樽","lat":43.1907,"lng":140.9947,"day":5}],
+"expensesConfig":{"currency":"JPY","members":["艾庭","隊友"],"lightSplitUrl":"https://liff.line.me/1655320992-Y8GowEpw/g/d8RFNPmMzgFVBHipaJtnpu","expenses":[{"item":"美瑛觀光計程車","amount":11370,"paidBy":"艾庭","splitWith":["艾庭","隊友"]},{"item":"日出號巴士","amount":11800,"paidBy":"隊友","splitWith":["艾庭","隊友"]},{"item":"湯咖哩午餐","amount":3200,"paidBy":"艾庭","splitWith":["艾庭","隊友"]}]}},
+{"id":"tokyo-2025","owner":"Ai","status":"past","private":true,"title":"東京三日小旅行","startDate":"2025-04-02","endDate":"2025-04-04","days":3,"country":"日本","countryCode":"JP","cities":["東京"],
+"spots":[{"name":"淺草寺","lat":35.7148,"lng":139.7967,"day":1},{"name":"澀谷","lat":35.6595,"lng":139.7005,"day":2},{"name":"新宿御苑","lat":35.6852,"lng":139.71,"day":3}],
+"expensesConfig":{"currency":"JPY","members":["艾庭","隊友","友達A"],"lightSplitUrl":"","expenses":[{"item":"晚餐","amount":9000,"paidBy":"艾庭","splitWith":["艾庭","隊友","友達A"]},{"item":"計程車","amount":3000,"paidBy":"友達A","splitWith":["艾庭","友達A"]},{"item":"門票","amount":1500,"paidBy":"隊友","splitWith":["艾庭","隊友","友達A"]}]}},
+{"id":"seoul-2025","owner":"Partner","status":"past","private":false,"title":"首爾四日美食行","startDate":"2025-10-10","endDate":"2025-10-13","days":4,"country":"韓國","countryCode":"KR","cities":["首爾"],
+"spots":[{"name":"景福宮","lat":37.5796,"lng":126.977,"day":1},{"name":"弘大","lat":37.5563,"lng":126.9237,"day":2},{"name":"南山塔","lat":37.5512,"lng":126.9882,"day":3}],
+"expensesConfig":{"currency":"KRW","members":["隊友","友達A"],"lightSplitUrl":"","expenses":[{"item":"烤肉","amount":60000,"paidBy":"隊友","splitWith":["隊友","友達A"]},{"item":"咖啡","amount":12000,"paidBy":"友達A","splitWith":["隊友","友達A"]}]}},
+{"id":"iceland-wish","owner":"shared","status":"future","private":false,"title":"冰島極光公路旅行（草稿）","startDate":"2027-09","endDate":"","days":8,"country":"冰島","countryCode":"IS","cities":["雷克雅維克"],"notes":"追極光、藍湖、環島自駕。預算與月份待討論。",
+"spots":[{"name":"雷克雅維克","lat":64.1466,"lng":-21.9426,"day":1}],
+"expensesConfig":{"currency":"ISK","members":["艾庭","隊友"],"lightSplitUrl":"","expenses":[]}}
+]}
