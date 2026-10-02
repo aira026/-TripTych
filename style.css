@@ -136,3 +136,16 @@ a.brand{display:block;text-decoration:none;color:inherit}a.brand .eyebrow{displa
 .splits{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:2px 0 10px}
 .chk{display:inline-flex;align-items:center;gap:6px;min-height:36px;font-size:.88rem}.chk input{width:20px;height:20px;accent-color:#111}
 .pp{min-width:150px;line-height:1.45}.pp .pd{font-size:.78rem;color:#7d7167}.pp .pt{font-weight:700;font-size:1rem;color:#111}.pp .pl,.pp .ph{font-size:.82rem}.pp .pn{margin-top:4px;font-size:.84rem;color:#3a322b;white-space:pre-wrap}
+
+body:not(.editing) .ed{display:none!important}
+body.editing .vw{display:none!important}
+.pill.mini.on{background:var(--ink);color:#fff}
+.topact{gap:8px}
+.memo{white-space:pre-wrap}
+.mb{display:inline-flex}.rw .mb,.cr .mb{margin-left:auto}
+
+.i-edit{display:inline-block;width:1.05em;height:1.05em;vertical-align:-.17em;background:#6a6a6a;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 20h9'/%3E%3Cpath d='M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 20h9'/%3E%3Cpath d='M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z'/%3E%3C/svg%3E") center/contain no-repeat}
+.it.stay .i-edit{background:#d8d8d8}.pill.mini.edt.on .i-edit{background:#fff}
+.it .act .cb,.mb .x{color:#7a7a7a;font-size:1rem}.it.stay .act .cb{color:#e6e6e6}
+.codebox{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:1.6rem;letter-spacing:.2em}.codebox .pill{letter-spacing:0;font-size:.85rem}
+.pp{min-width:190px;line-height:1.45}.pp .mit{display:flex;gap:6px;align-items:center;font-size:1rem}.pp .ptag{font-weight:600;margin:4px 0;color:#3a322b}.pp p{margin:2px 0;font-size:.85rem}.pp .pills{margin-top:8px;gap:6px}.pp .pill{min-height:38px;padding:0 14px;font-size:.8rem;color:#fff}.pp .pill.gl{color:#111}
