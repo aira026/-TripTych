@@ -11,7 +11,11 @@ function modal(h){$("#sheet").innerHTML=h+'<div class="pills"><button class="pil
 let UT=[];
 const FL={"日本":"JP","台灣":"TW","韓國":"KR","泰國":"TH","越南":"VN","新加坡":"SG","馬來西亞":"MY","香港":"HK","中國":"CN","美國":"US","加拿大":"CA","英國":"GB","法國":"FR","德國":"DE","義大利":"IT","西班牙":"ES","瑞士":"CH","冰島":"IS","澳洲":"AU","紐西蘭":"NZ","印尼":"ID","菲律賓":"PH","荷蘭":"NL","奧地利":"AT","捷克":"CZ","土耳其":"TR","希臘":"GR","挪威":"NO","芬蘭":"FI","瑞典":"SE"};
 const flagOf=t=>{const c=t.countryCode||FL[t.country];return c?flag(c):"🌍"};
-const nd=t=>Array.isArray(t.days)?t.days.length:(t.days||1);
+const dayOv=id=>{try{const v=JSON.parse(load("tp-days-"+id));return Array.isArray(v)?v:null}catch(e){return null}};
+const nd=t=>{const o=dayOv(t.id);return o?(o.length||1):Array.isArray(t.days)?t.days.length:(t.days||1)};
+const getDays=t=>dayOv(t.id)||(Array.isArray(t.days)?JSON.parse(JSON.stringify(t.days)):[]);
+const setDays=(t,D)=>store("tp-days-"+t.id,JSON.stringify(D));
+const isT=s=>/^\d{1,2}:\d{2}$/.test(s||"");
 let ST={};
 async function init0(){try{ST=JSON.parse(load("tp-status")||"{}")}catch(e){ST={}}try{UT=JSON.parse(load("tp-trips")||"[]")}catch(e){UT=[]}}
 const saveUT=()=>store("tp-trips",JSON.stringify(UT));
@@ -60,7 +64,7 @@ function packHTML(t){const P=plist(t),sec=(k,ti)=>`<h2 class="sec">${ti}</h2><di
 function calc(){const v=parseFloat($("#jpy")?.value)||0,r=parseFloat($("#rate")?.value)||0;if(!$("#twd"))return;if(r)store("tp-rate",r);$("#twd").textContent="NT$ "+Math.round(v*r).toLocaleString();
  $("#qk").innerHTML=[1000,5000,10000,20000].map(x=>`<button data-a="q" data-v="${x}"><small>¥${x.toLocaleString()}</small>NT$${Math.round(x*r).toLocaleString()}</button>`).join("")}
 function renderNow(t){const ids=["now","tix","storm","yen","pack"],emp='<p class="empty">目前沒有進行中的旅程</p>';
- const f={now:t=>'<div class="pills topact"><button class="pill" data-a="archive">📦 結束並歸檔</button></div>'+nowCard(t),tix:tixHTML,storm:stormHTML,yen:yenHTML,pack:packHTML};ids.forEach(i=>{$("#t-"+i).innerHTML=t?f[i](t):emp});calc()}
+ const f={now:t=>'<div class="pills topact"><button class="pill mini" data-a="archive">📦 結束並歸檔</button></div>'+nowCard(t),tix:tixHTML,storm:stormHTML,yen:yenHTML,pack:packHTML};ids.forEach(i=>{$("#t-"+i).innerHTML=t?f[i](t):emp});calc();if(t)MiniMap.render("nowmap",ptsOf(t))}
 
 /* now view */
 const bkList=t=>{try{const v=JSON.parse(load("tp-bk-"+t.id));if(Array.isArray(v))return v}catch(e){}return[]};
@@ -69,23 +73,43 @@ const okUrl=u=>/^https?:\/\//i.test(u||"");
 const bookHTML=t=>{const L=bkList(t);return`<h3>🏨 booking number</h3>${L.length?L.map(b=>`<div class="row"><span>${esc(b.n)}<br><small class="meta">${esc(b.c||"尚未填寫")}</small></span><span>${b.c?`<button class="cb" data-a="cp" data-v="${esc(b.c)}">複製</button>`:""}${okUrl(b.u)?`<a class="cb" href="${esc(b.u)}" target="_blank" rel="noopener">☁️ PDF</a>`:""}</span></div>`).join(""):'<p class="meta">還沒有項目，請到「票券與預約」新增。</p>'}`};
 const dietHTML=t=>`<h3>🥬 飲食溝通日文卡</h3><div class="jp" id="jp">${esc(t.diet)}</div><div class="pills"><button class="pill" data-a="cp" data-v="${esc(t.diet)}">複製日文</button></div>`;
 const sosHTML=t=>`<h3>🆘 緊急聯絡／保險</h3>${t.sos.map(s=>`<div class="row"><span>${esc(s[0])}</span>${s[2]?`<a class="cb" href="${s[2]}">${esc(s[1])}</a>`:`<b>${esc(s[1])}</b>`}</div>`).join("")}<p class="meta" style="margin-top:8px">請先把空白欄位填進 trips.json。</p>`;
-const itm=x=>`<div class="it ${x.type}"><div class="tm">${esc(x.t)}</div><div class="bd"><b>${esc(x.h)}</b>${x.type==="crit"?'<em class="tag">重要班次</em>':""}${x.d?`<p>${esc(x.d)}</p>`:""}${x.q?`<a class="cb" href="https://maps.google.com/?q=${encodeURIComponent(x.q)}" target="_blank" rel="noopener">📍 開啟地圖</a>`:""}${x.more?`<details><summary>備案／說明</summary><p>${esc(x.more)}</p></details>`:""}</div></div>`;
-const dayHTML=(t,i)=>{const d=t.days[i];return`<div class="glass ov"><h3>${esc(d.k)}｜${esc(d.city)}</h3><p>${esc(d.date)}　${d.wx} ${esc(d.tp)}</p><p>${esc(d.pos)}</p></div>${d.items.map(itm).join("")}`};
-function todayIdx(t){const n=new Date(),s=new Date(t.startDate+"T00:00"),k=Math.floor((n-s)/864e5);return k>=0&&k<t.days.length?k:0}
-function nowCard(t){const hasD=Array.isArray(t.days)&&t.days.length,hsp=t.hotspots&&t.mapImage,di=hasD?(dayI[t.id]??todayIdx(t)):0,n=hasD?t.days.length:nd(t);
+const itm=(x,di,ii)=>`<div class="it ${x.type||""}"><div class="tm">${esc(x.t)}</div><div class="bd"><b>${esc(x.h)}</b>${x.type==="crit"?'<em class="tag">重要班次</em>':""}${x.d?`<p>${esc(x.d)}</p>`:""}${x.q?`<a class="cb" href="https://maps.google.com/?q=${encodeURIComponent(x.q)}" target="_blank" rel="noopener">📍 開啟地圖</a>`:""}${x.more?`<details><summary>備案／說明</summary><p>${esc(x.more)}</p></details>`:""}</div><div class="act"><button class="cb" data-a="edititem" data-v="${di}:${ii}" aria-label="編輯">✏️</button><button class="cb" data-a="delitem" data-v="${di}:${ii}" aria-label="刪除">🗑</button></div></div>`;
+const tabsHTML=(t,di)=>getDays(t).map((d,i)=>`<button class="${i===di?"on":""}" data-a="day" data-v="${i}">${esc(d.k)}</button>`).join("")+'<button class="plus" data-a="addday" aria-label="新增一天">＋</button>';
+const dayHTML=(t,i)=>{const d=getDays(t)[i];if(!d)return'<div class="glass blk"><p class="meta">還沒有每日行程，按上方「＋」新增第一天。</p></div>';
+ return`<div class="glass ov"><h3>${esc(d.k)}${d.city?"｜"+esc(d.city):""}</h3><p>${esc(d.date||"")}${d.wx||d.tp?"　"+esc(d.wx||"")+" "+esc(d.tp||""):""}</p>${d.pos?`<p>${esc(d.pos)}</p>`:""}</div>${d.items.map((x,j)=>itm(x,i,j)).join("")||'<p class="meta" style="margin:8px 4px">這天還沒有行程項目。</p>'}<div class="pills"><button class="pill" data-a="additem" data-v="${i}">＋ 新增景點／行程</button><button class="pill gl" data-a="editday" data-v="${i}">編輯本日</button><button class="pill gl" data-a="delday" data-v="${i}">刪除本日</button></div>`};
+function todayIdx(t){const n=new Date(),s=new Date((t.startDate||"")+"T00:00"),k=Math.floor((n-s)/864e5);return k>=0&&k<getDays(t).length?k:0}
+function nowCard(t){const D=getDays(t),hsp=t.hotspots&&t.mapImage,di=Math.min(dayI[t.id]??todayIdx(t),Math.max(0,D.length-1)),n=nd(t);dayI[t.id]=di;
  return`<article class="glass dark hero"><small>${flagOf(t)} 當前行程</small><h2>${esc(t.title)}</h2><p>${esc(t.startDate||"日期未定")}${t.endDate?" – "+esc(t.endDate.slice(5)):""}・${n} 天</p>${t.notes?`<p>${esc(t.notes)}</p>`:""}<div class="cdp" id="cd"></div>
  <div class="pills"><button class="pill lt" data-a="m" data-v="book">🏨 booking number</button>${t.diet?'<button class="pill lt" data-a="m" data-v="diet">🥬 飲食卡</button>':""}${t.sos?'<button class="pill lt" data-a="m" data-v="sos">🆘 緊急</button>':""}</div></article>
  ${hsp?`<h2 class="sec">熱點地圖</h2><div class="glass blk"><div class="mapw"><div class="mz" id="mz"><img src="${esc(t.mapImage)}" alt="手繪旅行地圖">${t.hotspots.map((h,i)=>`<button class="hs" aria-label="${esc(h.name)}" style="left:${h.x/t.mapSize[0]*100}%;top:${h.y/t.mapSize[1]*100}%" data-a="hs" data-v="${i}"></button>`).join("")}</div></div><div class="mi" id="mi">👆 點地圖上的地點，會放大並顯示當天資訊</div></div>`:""}
- ${hasD?`<h2 class="sec">每日行程</h2><div class="days" id="dtabs">${t.days.map((d,i)=>`<button class="${i===di?"on":""}" data-a="day" data-v="${i}">${esc(d.k)}</button>`).join("")}</div><div id="dayblk">${dayHTML(t,di)}</div>`:'<div class="glass blk"><p class="meta">這趟旅程還沒有建立每日行程。</p></div>'}`}
+ <h2 class="sec">實際地圖</h2><div class="glass mapbox"><div id="nowmap" class="nowmap" role="application" aria-label="當前行程地圖"></div></div><p class="meta" style="margin:6px 4px 0">新增景點時填寫「地點」，就會自動標在地圖上。</p>
+ <h2 class="sec">每日行程</h2><div class="days" id="dtabs">${tabsHTML(t,di)}</div><div id="dayblk">${dayHTML(t,di)}</div>`}
+function ptsOf(t){const P=[];getDays(t).forEach((d,i)=>d.items.forEach(x=>{if(x.lat!=null)P.push({lat:x.lat,lng:x.lng,day:i,label:`${d.k} ${x.t||""} ${x.h}`})}));(t.spots||[]).forEach(s=>P.push({lat:s.lat,lng:s.lng,day:(s.day||1)-1,label:`${s.name}${s.day?"・D"+s.day:""}`}));return P}
+function refreshDays(t){const D=getDays(t),di=Math.min(dayI[t.id]??0,Math.max(0,D.length-1));dayI[t.id]=di;$("#dtabs").innerHTML=tabsHTML(t,di);$("#dayblk").innerHTML=dayHTML(t,di);MiniMap.render("nowmap",ptsOf(t))}
+async function saveItem(){const t=T0(),f=document.querySelector(".fm"),di=+f.dataset.di,ii=f.dataset.ii===""?null:+f.dataset.ii,v=i=>$("#fi-"+i).value.trim(),h=v("h");if(!h)return toast("請填寫標題");
+ const D=getDays(t),day=D[di],old=ii!=null?day.items[ii]:{},x={...old,t:v("t"),h,d:v("d"),q:v("q")};
+ if(x.q&&(x.q!==old.q||x.lat==null)){toast("查詢座標中…");const g=await geo(x.q+(t.country?" "+t.country:""));if(g){x.lat=g[0];x.lng=g[1]}else{delete x.lat;delete x.lng;toast("找不到座標，地圖不會標記")}}
+ if(!x.q){delete x.lat;delete x.lng}
+ if(ii!=null)day.items[ii]=x;else{let k=day.items.length;if(isT(x.t)){const n=day.items.findIndex(y=>isT(y.t)&&y.t.padStart(5,"0")>x.t.padStart(5,"0"));if(n>=0)k=n}day.items.splice(k,0,x)}
+ setDays(t,D);$("#modal").classList.remove("on");refreshDays(t)}
+function itemForm(di,ii){const t=T0(),x=ii!=null?getDays(t)[di].items[ii]:{};
+ modal(`<h3>${ii!=null?"編輯項目":"新增景點／行程"}</h3><div class="fm" data-di="${di}" data-ii="${ii??""}"><label>時間<input id="fi-t" value="${esc(x.t)}" placeholder="例如 09:30（可留空或寫「下午」）"></label><label>標題<input id="fi-h" value="${esc(x.h)}" placeholder="例如 美瑛青池"></label><label>備註<textarea id="fi-d" rows="3">${esc(x.d)}</textarea></label><label>地點（地圖標記與導航用，可留空）<input id="fi-q" value="${esc(x.q)}" placeholder="例如 青池 美瑛"></label><div class="pills"><button class="pill" data-a="saveitem"><span class="dot">✓</span>儲存</button></div></div>`)}
+function dayForm(i){const t=T0(),d=i!=null?getDays(t)[i]:{};
+ modal(`<h3>${i!=null?"編輯本日":"新增一天"}</h3><div class="fm" data-i="${i??""}"><label>城市／主題<input id="fd-c" value="${esc(d.city)}" placeholder="例如 皇后鎮"></label><label>日期（留空會依出發日自動帶入）<input id="fd-date" value="${esc(d.date)}" placeholder="例如 3/12（四）"></label><label>當天重點<input id="fd-p" value="${esc(d.pos)}"></label><div class="pills"><button class="pill" data-a="saveday"><span class="dot">✓</span>儲存</button></div></div>`)}
+function saveDay(){const t=T0(),f=document.querySelector(".fm"),i=f.dataset.i===""?null:+f.dataset.i,D=getDays(t),c=$("#fd-c").value.trim(),p=$("#fd-p").value.trim();let date=$("#fd-date").value.trim();
+ if(i!=null){D[i].city=c;D[i].pos=p;D[i].date=date}
+ else{const n=D.length;if(!date&&/^\d{4}-\d{2}-\d{2}/.test(t.startDate||"")){const x=new Date(t.startDate+"T00:00");x.setDate(x.getDate()+n);date=`${x.getMonth()+1}/${x.getDate()}（${"日一二三四五六"[x.getDay()]}）`}D.push({k:"D"+(n+1),date,city:c,wx:"",tp:"",pos:p,items:[]});dayI[t.id]=n}
+ setDays(t,D);$("#modal").classList.remove("on");refreshDays(t)}
+
 function mapZoom(t,k){const mz=$("#mz");if(zm===k){zm=null;mz.style.transform="";document.querySelectorAll(".hs").forEach(b=>b.classList.remove("act"));$("#mi").innerHTML="👆 點地圖上的地點，會放大並顯示當天資訊";return}
  zm=k;const h=t.hotspots[k],S=2.4,px=h.x/t.mapSize[0]*100,py=h.y/t.mapSize[1]*100,cl=v=>Math.min(0,Math.max(100-100*S,v));
  mz.style.transform=`translate(${cl(50-px*S)}%,${cl(50-py*S)}%) scale(${S})`;document.querySelectorAll(".hs").forEach((b,i)=>b.classList.toggle("act",i===k));
- const d=t.days[h.day];$("#mi").innerHTML=`<b>${esc(h.name)}</b><span class="chip">${esc(d.k)}</span><p>${esc(h.note)}</p><p>${esc(d.date)} ${esc(d.city)}・${esc(d.tp)}</p><div class="pills"><button class="pill" data-a="day" data-v="${h.day}" data-go="1">看 ${esc(d.k)} 行程</button><a class="pill gl" href="https://maps.google.com/?q=${encodeURIComponent(h.name+" 北海道")}" target="_blank" rel="noopener">📍 地圖</a></div>`}
+ const d=getDays(t)[h.day]||{};$("#mi").innerHTML=`<b>${esc(h.name)}</b><span class="chip">${esc(d.k)}</span><p>${esc(h.note)}</p><p>${esc(d.date)} ${esc(d.city)}・${esc(d.tp)}</p><div class="pills"><button class="pill" data-a="day" data-v="${h.day}" data-go="1">看 ${esc(d.k)} 行程</button><a class="pill gl" href="https://maps.google.com/?q=${encodeURIComponent(h.name+" 北海道")}" target="_blank" rel="noopener">📍 地圖</a></div>`}
 
 /* cards */
 function tcard(t){const fut=t.status==="future",mine=String(t.id).startsWith("u-");
  return`<article class="glass tc ${fut?"fut":""}"><div class="ph">${t.image?`<img src="${esc(t.image)}" alt="${esc(t.title)}" loading="lazy" onerror="this.remove()">`:""}<span>${flagOf(t)}</span></div><div class="in"><h3>${esc(t.title)}</h3><p class="meta">${esc(t.country)}・${esc(t.startDate||"日期未定")}${t.endDate?" – "+esc(t.endDate.slice(5)):""}・${nd(t)} 天</p>${t.notes?`<p style="margin-top:8px;font-size:.9rem">${esc(t.notes)}</p>`:""}
- <div class="pills" style="margin-top:10px">${t.spots?.length?`<a class="pill gl" href="https://maps.google.com/?q=${t.spots[0].lat},${t.spots[0].lng}" target="_blank" rel="noopener">📍 地圖</a>`:""}${fut?`<button class="pill" data-a="setcur" data-v="${esc(t.id)}">🚀 設為當前行程</button>`:""}${mine?`<button class="pill gl" data-a="edit" data-v="${esc(t.id)}">✏️ 編輯</button><button class="pill gl" data-a="del" data-v="${esc(t.id)}">🗑 刪除</button>`:""}</div></div></article>`}
+ <div class="pills" style="margin-top:10px">${t.spots?.length?`<a class="pill gl" href="https://maps.google.com/?q=${t.spots[0].lat},${t.spots[0].lng}" target="_blank" rel="noopener">📍 地圖</a>`:""}${t.status==="past"?`<button class="pill" data-a="setcur" data-v="${esc(t.id)}">🔄 重新設為當前行程</button>`:""}${fut?`<button class="pill" data-a="setcur" data-v="${esc(t.id)}">🚀 設為當前行程</button>`:""}${mine?`<button class="pill gl" data-a="edit" data-v="${esc(t.id)}">✏️ 編輯</button><button class="pill gl" data-a="del" data-v="${esc(t.id)}">🗑 刪除</button>`:""}</div></div></article>`}
 
 /* add / edit */
 function form(st,id){const t=UT.find(x=>x.id===id)||{status:st,spots:[]},sp=t.spots?.[0]||{};
@@ -140,11 +164,20 @@ document.addEventListener("click",e=>{const b=e.target.closest("[data-a],[data-t
 
  if(a==="home"){e.preventDefault();go("now");return}
  if(a==="archive"&&t){if(confirm(`將「${t.title}」結束並歸檔到歷史旅程？`)){ST[t.id]="past";store("tp-status",JSON.stringify(ST));render();go("past");toast("已歸檔")}return}
- if(a==="setcur"){const n=visible().find(x=>x.id===v),o=visible().filter(x=>x.status==="now");if(n&&confirm(`將「${n.title}」設為當前行程？${o.length?"\n原本的當前旅程會自動歸檔到歷史旅程。":""}`)){o.forEach(x=>ST[x.id]="past");ST[v]="now";store("tp-status",JSON.stringify(ST));render();go("now");toast("已設為當前行程")}return}
+ if(a==="setcur"){const n=visible().find(x=>x.id===v),o=visible().filter(x=>x.status==="now");if(n&&confirm(`將「${n.title}」${n.status==="past"?"重新":""}設為當前行程？${o.length?"\n原本的當前旅程會自動歸檔到歷史旅程。":""}`)){o.forEach(x=>ST[x.id]="past");ST[v]="now";store("tp-status",JSON.stringify(ST));render();go("now");toast("已設為當前行程")}return}
  if(a==="addbk"&&t){const i=$("#in-bk"),x=i.value.trim();if(!x)return;const L=bkList(t);L.push({n:x,c:"",u:""});saveBk(t,L);$("#t-tix").innerHTML=tixHTML(t);return}
  if(a==="delbk"&&t){if(!confirm("刪除這個項目？"))return;const L=bkList(t);L.splice(+v,1);saveBk(t,L);$("#t-tix").innerHTML=tixHTML(t);return}
  if(a==="cpi"){const c=document.querySelector(`[data-b="c"][data-i="${v}"]`).value;c?copy(c):toast("尚未填寫編號");return}
  if(a==="openu"){const u=document.querySelector(`[data-b="u"][data-i="${v}"]`).value.trim();okUrl(u)?window.open(u,"_blank","noopener"):toast("請先貼上 https:// 開頭的雲端連結");return}
+
+ if(a==="addday"&&t){dayForm(null);return}
+ if(a==="editday"&&t){dayForm(+v);return}
+ if(a==="delday"&&t){if(!confirm("刪除這一天與底下所有行程？"))return;const D=getDays(t);D.splice(+v,1);D.forEach((d,j)=>{if(/^D\d+$/.test(d.k))d.k="D"+(j+1)});setDays(t,D);dayI[t.id]=Math.max(0,+v-1);refreshDays(t);return}
+ if(a==="additem"&&t){itemForm(+v,null);return}
+ if(a==="edititem"&&t){const[p,q]=v.split(":");itemForm(+p,+q);return}
+ if(a==="delitem"&&t){if(!confirm("刪除這個項目？"))return;const[p,q]=v.split(":"),D=getDays(t);D[+p].items.splice(+q,1);setDays(t,D);refreshDays(t);return}
+ if(a==="saveitem"&&t){saveItem();return}
+ if(a==="saveday"&&t){saveDay();return}
  if(a==="close")$("#modal").classList.remove("on");
  else if(a==="cp")copy(v);
  else if(a==="m"&&t)modal({book:bookHTML,diet:dietHTML,sos:sosHTML}[v](t));
@@ -160,7 +193,7 @@ document.addEventListener("input",e=>{if(e.target.id==="jpy"||e.target.id==="rat
 document.addEventListener("change",e=>{const c=e.target.closest("input[data-k]"),t=T0();if(!c||!t)return;const P=plist(t);P[c.dataset.k][+c.dataset.i].d=c.checked?1:0;savePl(t,P);c.closest(".ck").classList.toggle("done",c.checked)});
 
 document.addEventListener("change",e=>{const i=e.target.closest("input[data-b]"),t=T0();if(!i||!t)return;const L=bkList(t);L[+i.dataset.i][i.dataset.b]=i.value.trim();saveBk(t,L)});
-function go(id){cur=id;document.body.classList.remove("dr");document.querySelectorAll(".panel").forEach(p=>p.classList.toggle("on",p.id==="t-"+id));renderDrawer();window.scrollTo({top:0});if(id==="map")MapView.refresh()}
+function go(id){cur=id;document.body.classList.remove("dr");document.querySelectorAll(".panel").forEach(p=>p.classList.toggle("on",p.id==="t-"+id));renderDrawer();window.scrollTo({top:0});if(id==="map")MapView.refresh();if(id==="now")MiniMap.refresh()}
 function renderDrawer(){const t=T0(),nm=t?(t.short||t.title):"",b=(id,c)=>`<button class="${c} ${cur===id?"on":""}" data-t="${id}">${id==="map"?"🌍 ":id==="past"?"📚 ":id==="future"?"✨ ":""}${LB[id]}</button>`;
  $("#drawer").innerHTML=`<p class="eyebrow brand" data-a="home">Triptych</p><h2 class="brand" data-a="home">【歷歷】/ Triptych</h2><p class="grp">❄️ 當前旅程　${t?esc(nm):"（目前沒有）"}</p>${t?SUB.map(i=>b(i,"sub")).join(""):""}<p class="grp">其他旅程</p>${["map","past","future"].map(i=>b(i,"")).join("")}<p class="meta" style="margin-top:auto">資料只存在這支手機，免登入。</p>`;
  $("#crumb").textContent=SUB.includes(cur)?`${t?nm:"當前旅程"} › ${LB[cur]}`:LB[cur]}

@@ -123,3 +123,10 @@ body.dr .drawer{transform:none}body.dr .scrim{opacity:1;pointer-events:auto}
 .it .bd .cb{display:flex;width:fit-content;margin:8px 0 0}
 a.brand{display:block;text-decoration:none;color:inherit}a.brand .eyebrow{display:block}.drawer .brand{cursor:pointer}
 .topact{margin:0 0 12px}
+
+.topact{display:flex;justify-content:flex-end;margin:0 0 10px}
+.pill.mini{min-height:36px;padding:0 14px;font-size:.76rem;font-weight:500;background:rgba(17,17,17,.07);color:#8a7f75}
+.nowmap{height:300px;border-radius:20px;position:relative;z-index:0}
+.days button.plus{background:var(--ink);color:#fff;min-width:44px}
+.it .act{display:flex;flex-direction:column;gap:2px}.it .act .cb{display:flex;justify-content:center;min-width:40px;min-height:40px;margin:0;padding:0;background:transparent}
+.it.stay .act .cb{color:#fff}
