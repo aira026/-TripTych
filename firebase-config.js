@@ -1,5 +1,5 @@
 // Firebase 設定檔
-export const firebaseConfig = {
+var firebaseConfig = {
   apiKey: "AIzaSyB7Xddw50fPe5_Cv2HAXVb47sJGRn1nGgU",
   authDomain: "triptych-dad14.firebaseapp.com",
   projectId: "triptych-dad14",
@@ -9,7 +9,7 @@ export const firebaseConfig = {
   measurementId: "G-MZ9H92XRT9"
 };
 
-// 如果專案直接使用全域的 window.firebaseConfig，順便掛載上去
+// 同時支援 ES Module 與一般傳統 <script> 載入
 if (typeof window !== 'undefined') {
   window.firebaseConfig = firebaseConfig;
 }
