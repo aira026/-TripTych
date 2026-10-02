@@ -1,0 +1,30 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{db}/documents {
+
+    match /trips/{id} {
+      // 只有 members 裡的人讀得到
+      allow read: if request.auth != null && request.auth.uid in resource.data.members;
+      allow create: if request.auth != null
+        && request.resource.data.owner == request.auth.uid
+        && request.auth.uid in request.resource.data.members;
+      // 成員可編輯；非成員只能「憑有效邀請碼把自己加進 members」
+      allow update: if request.auth != null && (
+        request.auth.uid in resource.data.members
+        || (resource.data.inviteCode != null
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['members','memberNames','st'])
+            && request.auth.uid in request.resource.data.members
+            && request.resource.data.members.size() == resource.data.members.size() + 1
+            && get(/databases/$(db)/documents/invites/$(resource.data.inviteCode)).data.tripId == id));
+      allow delete: if request.auth != null && request.auth.uid == resource.data.owner;
+    }
+
+    match /invites/{code} {
+      allow get: if request.auth != null;   // 只能「知道代碼才讀得到」，不能列出全部
+      allow list: if false;
+      allow create: if request.auth != null
+        && request.auth.uid in get(/databases/$(db)/documents/trips/$(request.resource.data.tripId)).data.members;
+      allow update, delete: if false;
+    }
+  }
+}

@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 <html lang="zh-Hant"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#f6ead9"><meta name="description" content="【歷歷】Triptych 旅行足跡與行程手冊">
-<title>【歷歷】/ Triptych</title>
+<meta name="theme-color" content="#f6ead9"><meta name="description" content="【歷歷】TripTych 旅行足跡與行程手冊">
+<title>【歷歷】/ TripTych</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <link rel="stylesheet" href="style.css"></head>
 <body>
 <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
 <header class="top">
  <button class="menu" data-a="menu" aria-label="開啟選單" aria-controls="drawer">☰</button>
- <div><a href="./" class="brand" data-a="home" aria-label="回到首頁"><span class="eyebrow">Triptych</span><h1>【歷歷】/ Triptych</h1></a><p class="crumb" id="crumb"></p></div>
+ <div><a href="./" class="brand" data-a="home" aria-label="回到首頁"><span class="eyebrow">TripTych</span><h1>【歷歷】/ TripTych</h1></a><p class="crumb" id="crumb"></p></div><button class="who" id="who" data-a="auth" aria-label="登入／登出">登入</button>
 </header>
 <aside class="drawer" id="drawer" aria-label="目錄"></aside><div class="scrim" id="scrim" data-a="menu"></div>
 <main>
@@ -24,5 +24,5 @@
 </main>
 <div id="modal" class="modal"><div class="sheet glass" id="sheet"></div></div><div id="toast" class="toast"></div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="map.js"></script><script src="app.js"></script>
+<script src="map.js"></script><script type="module" src="app.js"></script>
 </body></html>
