@@ -34,18 +34,18 @@ const isT=s=>/^\d{1,2}:\d{2}$/.test(s||"");
 const visible=()=>TRIPS.map(t=>({...t,status:statusOf(t),locked:false}));
 
 /* accounting */
-function settle(c){const m=c.members,paid={},owed={};m.forEach(x=>{paid[x]=0;owed[x]=0});let total=0;
- c.expenses.forEach(e=>{total+=e.amount;paid[e.paidBy]=(paid[e.paidBy]||0)+e.amount;const sw=e.splitWith?.length?e.splitWith:m;sw.forEach(x=>owed[x]=(owed[x]||0)+e.amount/sw.length)});
+function settle(c){const m=c.all||c.members,paid={},owed={};m.forEach(x=>{paid[x]=0;owed[x]=0});let total=0;
+ c.expenses.forEach(e=>{total+=e.amount;paid[e.paidBy]=(paid[e.paidBy]||0)+e.amount;const sw=e.splitWith?.length?e.splitWith:c.members;sw.forEach(x=>owed[x]=(owed[x]||0)+e.amount/sw.length)});
  const bal=m.map(x=>({m:x,b:paid[x]-owed[x]})),de=bal.filter(x=>x.b<-.5).sort((a,b)=>a.b-b.b),cr=bal.filter(x=>x.b>.5).sort((a,b)=>b.b-a.b),out=[];let i=0,j=0;
  while(i<de.length&&j<cr.length){const a=Math.min(-de[i].b,cr[j].b);out.push([de[i].m,cr[j].m,a]);de[i].b+=a;cr[j].b-=a;if(de[i].b>-.5)i++;if(cr[j].b<.5)j++}
  return{total,paid,out}}
-function acct(t,L,r){const c=cfg(t),S=settle({members:c.members,expenses:L}),cur=c.currency,tw=v=>` <small class="meta">≈ NT$ ${Math.round(v*r).toLocaleString()}</small>`;
- return`<p class="meta">參與成員 (${c.members.length}人)：${c.members.map(m=>esc(nameOf(t,m))).join("、")}</p>
+function acct(t,L,r){const c=cfg(t),S=settle({members:c.members,all:[...c.members,...c.orphans],expenses:L}),cur=c.currency,tw=v=>` <small class="meta">≈ NT$ ${Math.round(v*r).toLocaleString()}</small>`;
+ return`<p class="meta">參與成員 (${c.members.length}人)：${c.members.map(m=>esc(nameOf(t,m))).join("、")}</p>${c.orphans.length?`<div class="pay">有 ${c.orphans.length} 個名稱不是目前成員（${c.orphans.map(o=>esc(lbl(t,o))).join("、")}）。<button class="cb" data-a="fixold">整理舊帳目</button></div>`:""}
  ${c.lightSplitUrl?`<div class="pills"><a class="pill" href="${esc(c.lightSplitUrl)}" target="_blank" rel="noopener">🔗 開啟 LightSplit 記帳本</a></div>`:""}
  <p style="margin-top:12px" class="meta">總花費</p><p class="sum">${fmt(S.total,cur)}${tw(S.total)}</p>
- <h4 class="meta" style="margin:12px 0 2px">各自墊付</h4>${c.members.map(m=>`<div class="row"><span>${esc(nameOf(t,m))}</span><b>${fmt(S.paid[m]||0,cur)}</b></div>`).join("")}
- <h4 class="meta" style="margin:12px 0 2px">結算</h4>${S.out.length?S.out.map(o=>`<div class="pay">${esc(nameOf(t,o[0]))} → ${esc(nameOf(t,o[1]))}　<b>${fmt(o[2],cur)}</b>${tw(o[2])}</div>`).join(""):'<div class="pay">已平衡 ✅</div>'}
- <h4 class="meta" style="margin:12px 0 2px">明細</h4>${L.map((e,i)=>`<div class="row"><span>${esc(e.item)}<br><small class="meta">${esc(nameOf(t,e.paidBy))} 付</small></span><b>${fmt(e.amount,cur)}</b><button class="x ed" data-a="delex" data-v="${i}" aria-label="刪除">✕</button></div>`).join("")||'<p class="meta">尚無明細</p>'}`}
+ <h4 class="meta" style="margin:12px 0 2px">各自墊付</h4>${[...c.members,...c.orphans.filter(o=>S.paid[o])].map(m=>`<div class="row"><span>${esc(lbl(t,m))}</span><b>${fmt(S.paid[m]||0,cur)}</b></div>`).join("")}
+ <h4 class="meta" style="margin:12px 0 2px">結算</h4>${S.out.length?S.out.map(o=>`<div class="pay">${esc(lbl(t,o[0]))} → ${esc(lbl(t,o[1]))}　<b>${fmt(o[2],cur)}</b>${tw(o[2])}</div>`).join(""):'<div class="pay">已平衡 ✅</div>'}
+ <h4 class="meta" style="margin:12px 0 2px">明細</h4>${L.map((e,i)=>`<div class="row"><span>${esc(e.item)}<br><small class="meta">${esc(lbl(t,e.paidBy))} 付</small></span><b>${fmt(e.amount,cur)}</b><button class="x ed" data-a="delex" data-v="${i}" aria-label="刪除">✕</button></div>`).join("")||'<p class="meta">尚無明細</p>'}`}
 /* --- Hokkaido sub pages --- */
 const T0=()=>visible().find(x=>x.status==="now");
 let cur="now";const LB={now:"行程總覽",tix:"票券與預約",storm:"備忘錄",yen:"匯率與公費",pack:"打包清單",map:"全球足跡",past:"歷史旅程",future:"未來清單"};const SUB=["now","tix","storm","yen","pack"];
@@ -62,7 +62,8 @@ ${L.map((b,i)=>`<div class="glass blk"><div class="vw"><b>${esc(b.n)}</b><div cl
 ${t.diet||t.sos?`<div class="pills" style="margin-top:14px">${t.diet?'<button class="pill gl" data-a="m" data-v="diet">🥬 飲食日文卡</button>':""}${t.sos?'<button class="pill gl" data-a="m" data-v="sos">🆘 緊急聯絡</button>':""}</div>`:""}`};
 const GST={links:[["🚆","JR 運行","https://www.jrhokkaido.co.jp/travel/unkou/"],["🚗","道路情報","https://www.jartic.or.jp/"],["🌤️","天氣警報","https://www.jma.go.jp/bosai/forecast/"],["✈️","航班狀況","https://www.new-chitose-airport.jp/ja/flight/"]],risks:[],crisis:[["先保安全","開警示燈、停到路邊；有人受傷撥 119"],["聯絡租車公司","使用取車時給的救援電話，說明位置"],["通知住宿","告知會晚到，避免訂房被取消"],["拍照留收據","車況、現場、拖吊單據，回台理賠用"]]};
 const DEFPACK=["護照／簽證","行動電源與充電線","常備藥品","信用卡與現金","網卡／漫遊"];
-const cfg=t=>{const ex=t.expenses||[],ks=new Set(t.members||[]);ex.forEach(e=>{ks.add(e.paidBy);(e.splitWith||[]).forEach(k=>ks.add(k))});return{currency:t.currency||"JPY",members:[...ks],lightSplitUrl:t.lightSplitUrl||"",expenses:ex}};
+const cfg=t=>{const ex=t.expenses||[],mem=[...new Set(t.members||[])],ks=new Set();ex.forEach(e=>{ks.add(e.paidBy);(e.splitWith||[]).forEach(k=>ks.add(k))});return{currency:t.currency||"JPY",members:mem,orphans:[...ks].filter(k=>k&&!mem.includes(k)),lightSplitUrl:t.lightSplitUrl||"",expenses:ex}};
+const lbl=(t,k)=>(t.members||[]).includes(k)?nameOf(t,k):(t.memberNames&&t.memberNames[k]?t.memberNames[k]+"（已離開）":k+"（舊紀錄）");
 const memoOf=t=>t.memo?JSON.parse(JSON.stringify(t.memo)):{risks:((t.storm&&t.storm.risks)||[]).map(r=>({d:r[0],w:r[1],p:r[2],c:r[3]?1:0})),steps:((t.storm&&t.storm.crisis)||GST.crisis).map(c=>({t:c[0],d:c[1]})),note:""};
 const saveMemo=(t,m)=>patch(t,{memo:m});
 const eb=(k,i)=>`<span class="ed mb"><button class="x" data-a="memoedit" data-v="${k}:${i}" aria-label="編輯"><i class=i-edit></i></button><button class="x" data-a="memodel" data-v="${k}:${i}" aria-label="刪除">✕</button></span>`;
@@ -225,6 +226,8 @@ if(b.closest("#drawer")&&a&&a!=="menu")document.body.classList.remove("dr");
  if(a==="resetinv"&&t){if(confirm("重設後舊邀請碼立刻失效（已在行程裡的人不受影響）。要重設嗎？"))resetInvite(t).then(ok=>{if(ok)membersModal(t)});return}
  if(a==="cpinv"){copy(v,"已複製邀請碼");return}
  if(a==="tplreset"&&t){if(TPL&&confirm("將每日行程與地圖標點重設為最新範例？你在每日行程上的修改會被覆蓋。"))patch(t,{days:TPL.days,spots:TPL.spots}).then(()=>{refreshDays(T0());toast("已重設為最新範例")});return}
+ if(a==="fixold"&&t){const c=cfg(t);modal(`<h3>整理舊帳目</h3><p class="meta">這些名稱不是目前的成員。請選擇每個名稱要歸給哪位成員，套用後帳本與結算會自動更新。</p><div class="fm">${c.orphans.map(o=>`<label>${esc(lbl(t,o))}<select class="fi" data-orph="${esc(o)}"><option value="">（暫不處理）</option>${c.members.map(m=>`<option value="${esc(m)}">${esc(nameOf(t,m))}</option>`).join("")}</select></label>`).join("")}<div class="pills"><button class="pill" data-a="fixapply">套用</button></div></div>`);return}
+ if(a==="fixapply"&&t){const map={};document.querySelectorAll("[data-orph]").forEach(x=>{if(x.value)map[x.dataset.orph]=x.value});const L=exList(t).map(e=>({...e,paidBy:map[e.paidBy]||e.paidBy,splitWith:[...new Set((e.splitWith||[]).map(k=>map[k]||k))]}));saveEx(t,L);$("#modal").classList.remove("on");$("#t-yen").innerHTML=bar()+yenHTML(t);calc();toast("已整理舊帳目");return}
  if(a==="close")$("#modal").classList.remove("on");
  else if(a==="cp")copy(v);
  else if(a==="m"&&t)modal({book:bookHTML,diet:dietHTML,sos:sosHTML}[v](t));

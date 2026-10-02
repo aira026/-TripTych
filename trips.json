@@ -608,40 +608,7 @@
    ],
    "expensesConfig": {
     "currency": "JPY",
-    "members": [
-     "艾庭",
-     "隊友"
-    ],
-    "lightSplitUrl": "https://liff.line.me/1655320992-Y8GowEpw/g/d8RFNPmMzgFVBHipaJtnpu",
-    "expenses": [
-     {
-      "item": "美瑛觀光計程車",
-      "amount": 11370,
-      "paidBy": "艾庭",
-      "splitWith": [
-       "艾庭",
-       "隊友"
-      ]
-     },
-     {
-      "item": "日出號巴士",
-      "amount": 11800,
-      "paidBy": "隊友",
-      "splitWith": [
-       "艾庭",
-       "隊友"
-      ]
-     },
-     {
-      "item": "湯咖哩午餐",
-      "amount": 3200,
-      "paidBy": "艾庭",
-      "splitWith": [
-       "艾庭",
-       "隊友"
-      ]
-     }
-    ]
+    "lightSplitUrl": "https://liff.line.me/1655320992-Y8GowEpw/g/d8RFNPmMzgFVBHipaJtnpu"
    },
    "storm": {
     "links": [
