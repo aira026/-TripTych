@@ -1,10 +1,15 @@
-// 到 Firebase 控制台 → 專案設定 → 一般 → 你的應用程式（Web）複製這份設定貼上。
-// 這些值本來就會公開在前端，真正的保護靠 Firestore 安全規則（見 firestore.rules）。
+// Firebase 設定檔
 export const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  projectId: "YOUR_PROJECT",
-  storageBucket: "YOUR_PROJECT.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyB7Xddw50fPe5_Cv2HAXVb47sJGRn1nGgU",
+  authDomain: "triptych-dad14.firebaseapp.com",
+  projectId: "triptych-dad14",
+  storageBucket: "triptych-dad14.firebasestorage.app",
+  messagingSenderId: "947728885313",
+  appId: "1:947728885313:web:e513b46dddc03b2c20c8c0",
+  measurementId: "G-MZ9H92XRT9"
 };
+
+// 如果專案直接使用全域的 window.firebaseConfig，順便掛載上去
+if (typeof window !== 'undefined') {
+  window.firebaseConfig = firebaseConfig;
+}
