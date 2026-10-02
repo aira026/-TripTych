@@ -15,7 +15,7 @@
 <main>
  <section id="t-now" class="panel on" aria-label="當前行程"></section>
  <section id="t-tix" class="panel" aria-label="票券與預約"></section>
- <section id="t-storm" class="panel" aria-label="暴風雪備案"></section>
+ <section id="t-storm" class="panel" aria-label="備忘錄"></section>
  <section id="t-yen" class="panel" aria-label="匯率與公費"></section>
  <section id="t-pack" class="panel" aria-label="打包清單"></section>
  <section id="t-map" class="panel" aria-label="全球足跡"><div class="stats" id="stats"></div><div class="glass mapbox"><div id="map" role="application" aria-label="足跡地圖"></div></div></section>
@@ -24,17 +24,6 @@
 </main>
 <div id="modal" class="modal"><div class="sheet glass" id="sheet"></div></div><div id="toast" class="toast"></div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="map.js"></script>
-
-<!-- 1. 載入 Firebase 官方 SDK (Compat 版本) -->
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-
-<!-- 2. 載入 Firebase 設定檔 -->
-<script src="firebase-config.js"></script>
-
-<!-- 3. 載入主程式 (請將 type="module" 移除以確保全域變數讀取) -->
-<script src="app.js"></script>
-</body>
-</html>
+<script src="map.js"></script><script>addEventListener("error",function(e){if(window.__tp)return;var b=document.getElementById("t-now");if(b)b.innerHTML='<div class="glass blk"><p>⚠️ 程式載入失敗：'+String(e.message||"").replace(/</g,"&lt;")+'</p><p class="meta">常見原因：firebase-config.js 少了 export（請用 export const firebaseConfig = {…}）。</p></div>'});</script>
+<script type="module" src="app.js"></script>
+</body></html>

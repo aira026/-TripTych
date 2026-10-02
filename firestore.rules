@@ -5,22 +5,34 @@ service cloud.firestore {
     match /trips/{id} {
       // 只有 members 裡的人讀得到
       allow read: if request.auth != null && request.auth.uid in resource.data.members;
+
       allow create: if request.auth != null
         && request.resource.data.owner == request.auth.uid
         && request.auth.uid in request.resource.data.members;
-      // 成員可編輯；非成員只能「憑有效邀請碼把自己加進 members」
+
       allow update: if request.auth != null && (
-        request.auth.uid in resource.data.members
+        // 1) 建立者：什麼都能改（含成員管理）
+        request.auth.uid == resource.data.owner
+        // 2) 一般成員：可編輯內容，但不能動成員名單 / 建立者
+        || (request.auth.uid in resource.data.members
+            && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['members','memberNames','owner']))
+        // 3) 成員自己離開
+        || (request.auth.uid in resource.data.members
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['members','st'])
+            && !(request.auth.uid in request.resource.data.members)
+            && request.resource.data.members.size() == resource.data.members.size() - 1)
+        // 4) 非成員：必須帶著「目前有效」的邀請碼才能把自己加進來
         || (resource.data.inviteCode != null
-            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['members','memberNames','st'])
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['members','memberNames','st','lastJoinCode'])
+            && request.resource.data.lastJoinCode == resource.data.inviteCode
             && request.auth.uid in request.resource.data.members
-            && request.resource.data.members.size() == resource.data.members.size() + 1
-            && get(/databases/$(db)/documents/invites/$(resource.data.inviteCode)).data.tripId == id));
+            && request.resource.data.members.size() == resource.data.members.size() + 1));
+
       allow delete: if request.auth != null && request.auth.uid == resource.data.owner;
     }
 
     match /invites/{code} {
-      allow get: if request.auth != null;   // 只能「知道代碼才讀得到」，不能列出全部
+      allow get: if request.auth != null;   // 知道代碼才讀得到，不能列出全部
       allow list: if false;
       allow create: if request.auth != null
         && request.auth.uid in get(/databases/$(db)/documents/trips/$(request.resource.data.tripId)).data.members;

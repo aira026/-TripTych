@@ -1,5 +1,6 @@
-// Firebase 設定檔
-var firebaseConfig = {
+// ⚠️ 這個檔案必須是 ES Module：開頭要有 export，app.js 才讀得到。
+// Firebase 網頁 apiKey 本來就會公開在前端，真正的保護靠 Firestore 安全規則（firestore.rules）。
+export const firebaseConfig = {
   apiKey: "AIzaSyB7Xddw50fPe5_Cv2HAXVb47sJGRn1nGgU",
   authDomain: "triptych-dad14.firebaseapp.com",
   projectId: "triptych-dad14",
@@ -8,8 +9,3 @@ var firebaseConfig = {
   appId: "1:947728885313:web:e513b46dddc03b2c20c8c0",
   measurementId: "G-MZ9H92XRT9"
 };
-
-// 同時支援 ES Module 與一般傳統 <script> 載入
-if (typeof window !== 'undefined') {
-  window.firebaseConfig = firebaseConfig;
-}
