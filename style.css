@@ -119,3 +119,7 @@ body.dr .drawer{transform:none}body.dr .scrim{opacity:1;pointer-events:auto}
 .ck input{width:22px;height:22px;accent-color:#111}.ck span{flex:1}.ck.done span{text-decoration:line-through;color:#a89d92}
 .x{min-width:44px;min-height:44px;border:0;background:none;color:#a89d92;font-size:1rem;cursor:pointer}
 .add{display:flex;gap:8px;align-items:center;margin-top:10px}.add .fi{margin:0;flex:1}
+
+.it .bd .cb{display:flex;width:fit-content;margin:8px 0 0}
+a.brand{display:block;text-decoration:none;color:inherit}a.brand .eyebrow{display:block}.drawer .brand{cursor:pointer}
+.topact{margin:0 0 12px}
