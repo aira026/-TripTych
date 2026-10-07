@@ -163,3 +163,24 @@ body.editing .vw{display:none!important}
 #focus .fclose{min-height:44px;padding:0 18px;border:1px solid #555;border-radius:50px;background:transparent;color:#fff;font-weight:600;cursor:pointer}
 #focus .fbody{flex:1;overflow:auto;padding:16px 20px calc(24px + env(safe-area-inset-bottom));display:flex;flex-direction:column;justify-content:center;gap:28px}
 #focus .fbody p{font-size:clamp(1.6rem,6.8vw,2.7rem);line-height:1.55;font-weight:600}#focus .hl{background:#ffd60a;color:#000;border-radius:8px}
+
+/* ===== checkbox：極淡邊框，勾選後才轉深色 ===== */
+input[type=checkbox],.fm input[type=checkbox],.ck input[type=checkbox],.chk input[type=checkbox]{-webkit-appearance:none;appearance:none;display:inline-block;flex:0 0 22px;width:22px;height:22px;min-height:0;margin:0;padding:0;vertical-align:middle;border:1px solid #e5e5e5;border-radius:7px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.06);cursor:pointer;transition:background .15s,border-color .15s}
+input[type=checkbox]:checked{background:#2b2b2b url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center/70% no-repeat;border-color:#2b2b2b}
+input[type=checkbox]:focus-visible{outline:2px solid rgba(17,17,17,.25);outline-offset:2px}
+/* ===== 飲食標籤 / 警示 ===== */
+.rtags{display:flex;flex-wrap:wrap;gap:4px;margin:4px 0 2px}
+.rtag{padding:1px 10px;border-radius:50px;background:rgba(17,17,17,.08);color:#3a322b;font-size:.76rem;font-weight:600}.rtag.inf{background:transparent;border:1px dashed rgba(17,17,17,.25);font-weight:500}
+.dwarn{display:block;margin:0 0 6px;padding:6px 12px;border-radius:12px;background:#ffe3b3;border-left:4px solid #e08a00;color:#6b3d00;font-size:.84rem;font-weight:700;line-height:1.45}
+.it.stay .rtag{background:rgba(255,255,255,.18);color:#fff}.it.stay .rtag.inf{border-color:rgba(255,255,255,.4)}
+details p{white-space:pre-wrap}
+.daymoree textarea{margin-top:6px}.daymorev{margin:6px 0}
+/* ===== 脈衝定位點（莫蘭迪） ===== */
+.pdot-w{background:none;border:0}
+.pdot{position:relative;display:block;width:26px;height:26px}
+.pdot b,.pdot i{position:absolute;left:50%;top:50%;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%}
+.pdot b{background:#b4766c;border:2px solid #fff;box-shadow:0 2px 6px rgba(80,50,40,.35);transition:background .2s,transform .2s}
+.pdot i{background:rgba(180,118,108,.5);animation:pdp 2.2s ease-out infinite}
+@keyframes pdp{0%{transform:scale(.8);opacity:.85}100%{transform:scale(2.7);opacity:0}}
+.pdot-w.sel .pdot b{background:#7f9482;transform:scale(1.25)}.pdot-w.sel .pdot i{background:rgba(127,148,130,.5)}
+.leaflet-popup-content-wrapper{border-radius:18px}
