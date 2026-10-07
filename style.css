@@ -149,3 +149,17 @@ body.editing .vw{display:none!important}
 .it .act .cb,.mb .x{color:#7a7a7a;font-size:1rem}.it.stay .act .cb{color:#e6e6e6}
 .codebox{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:1.6rem;letter-spacing:.2em}.codebox .pill{letter-spacing:0;font-size:.85rem}
 .pp{min-width:190px;line-height:1.45}.pp .mit{display:flex;gap:6px;align-items:center;font-size:1rem}.pp .ptag{font-weight:600;margin:4px 0;color:#3a322b}.pp p{margin:2px 0;font-size:.85rem}.pp .pills{margin-top:8px;gap:6px}.pp .pill{min-height:38px;padding:0 14px;font-size:.8rem;color:#fff}.pp .pill.gl{color:#111}
+
+/* ===== food safety ===== */
+.lang{display:flex;gap:6px}.lang button{flex:1;min-height:44px;border:0;border-radius:50px;background:rgba(17,17,17,.07);font-weight:600;color:#111;cursor:pointer}.lang button.on{background:#111;color:#fff}
+.frow{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;padding:10px 0;border-bottom:1px solid rgba(17,17,17,.07)}
+.ftag{display:inline-block;margin:2px 4px 2px 0;padding:1px 10px;border-radius:50px;background:#111;color:#fff;font-size:.76rem}.ftag.soft{background:#ffe9a8;color:#5b4300}
+.foodcard{background:#fff;border-radius:20px;padding:14px 16px;margin-bottom:12px}.foodcard p{margin:0 0 10px;line-height:1.7;font-size:1rem}.foodcard p:last-child{margin:0}
+.hl{font-weight:800;background:#fff0b3;border-radius:6px;padding:0 .2em}
+.dwarn{display:inline-block;margin:6px 0 0;padding:4px 12px;border-radius:12px;background:#fff3c4;color:#6a4b00;font-size:.82rem;font-weight:600;line-height:1.4}
+#focus{position:fixed;inset:0;z-index:6000;background:#000;color:#fff;display:none;flex-direction:column}#focus.on{display:flex}
+#focus .fbar{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:calc(12px + env(safe-area-inset-top)) 14px 8px}
+#focus .lang{flex:1;max-width:300px}#focus .lang button{background:#262626;color:#fff}#focus .lang button.on{background:#fff;color:#000}
+#focus .fclose{min-height:44px;padding:0 18px;border:1px solid #555;border-radius:50px;background:transparent;color:#fff;font-weight:600;cursor:pointer}
+#focus .fbody{flex:1;overflow:auto;padding:16px 20px calc(24px + env(safe-area-inset-bottom));display:flex;flex-direction:column;justify-content:center;gap:28px}
+#focus .fbody p{font-size:clamp(1.6rem,6.8vw,2.7rem);line-height:1.55;font-weight:600}#focus .hl{background:#ffd60a;color:#000;border-radius:8px}

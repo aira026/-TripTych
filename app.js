@@ -59,7 +59,7 @@ const savePl=(t,l)=>patch(t,{lists:l});
 const tixHTML=t=>{const L=bkList(t);return`<div class="glass blk"><p class="meta vw">需要新增、修改項目或雲端連結（booking PDF），請按右上「編輯模式」。</p><p class="meta ed">貼上雲端分享連結（Google 雲端硬碟／iCloud／Dropbox，權限設為「知道連結者可檢視」）。這裡的項目會同步出現在首頁的 Booking。</p></div>
 ${L.map((b,i)=>`<div class="glass blk"><div class="vw"><b>${esc(b.n)}</b><div class="meta">${esc(b.c||"尚未填寫編號")}</div><div class="pills">${b.c?`<button class="pill gl" data-a="cp" data-v="${esc(b.c)}">複製編號</button>`:""}${okUrl(b.u)?`<a class="pill gl" href="${esc(b.u)}" target="_blank" rel="noopener">☁️ 開啟 PDF</a>`:""}</div></div><div class="ed"><input class="fi" data-b="n" data-i="${i}" value="${esc(b.n)}" placeholder="項目名稱（例：住宿、機票）"><input class="fi" data-b="c" data-i="${i}" value="${esc(b.c)}" placeholder="booking 編號"><input class="fi" data-b="u" data-i="${i}" type="url" value="${esc(b.u)}" placeholder="雲端連結 https://…"><div class="pills"><button class="pill gl" data-a="cpi" data-v="${i}">複製編號</button><button class="pill gl" data-a="openu" data-v="${i}">☁️ 開啟 PDF</button><button class="pill gl" data-a="delbk" data-v="${i}">✕ 刪除</button></div></div></div>`).join("")||'<p class="empty">還沒有項目</p>'}
 <div class="add ed"><input class="fi" id="in-bk" placeholder="新增項目名稱…"><button class="pill" data-a="addbk">＋ 新增</button></div>
-${t.diet||t.sos?`<div class="pills" style="margin-top:14px">${t.diet?'<button class="pill gl" data-a="m" data-v="diet">🥬 飲食日文卡</button>':""}${t.sos?'<button class="pill gl" data-a="m" data-v="sos">🆘 緊急聯絡</button>':""}</div>`:""}`};
+${true?`<div class="pills" style="margin-top:14px">'<button class="pill gl" data-a="m" data-v="diet">🥬 飲食日文卡</button>'${t.sos?'<button class="pill gl" data-a="m" data-v="sos">🆘 緊急聯絡</button>':""}</div>`:""}`};
 const GST={links:[["🚆","JR 運行","https://www.jrhokkaido.co.jp/travel/unkou/"],["🚗","道路情報","https://www.jartic.or.jp/"],["🌤️","天氣警報","https://www.jma.go.jp/bosai/forecast/"],["✈️","航班狀況","https://www.new-chitose-airport.jp/ja/flight/"]],risks:[],crisis:[["先保安全","開警示燈、停到路邊；有人受傷撥 119"],["聯絡租車公司","使用取車時給的救援電話，說明位置"],["通知住宿","告知會晚到，避免訂房被取消"],["拍照留收據","車況、現場、拖吊單據，回台理賠用"]]};
 const DEFPACK=["護照／簽證","行動電源與充電線","常備藥品","信用卡與現金","網卡／漫遊"];
 const cfg=t=>{const ex=t.expenses||[],mem=[...new Set(t.members||[])],ks=new Set();ex.forEach(e=>{ks.add(e.paidBy);(e.splitWith||[]).forEach(k=>ks.add(k))});return{currency:t.currency||"JPY",members:mem,orphans:[...ks].filter(k=>k&&!mem.includes(k)),lightSplitUrl:t.lightSplitUrl||"",expenses:ex}};
@@ -87,7 +87,7 @@ function packHTML(t){const P=plist(t),sec=(k,ti)=>`<h2 class="sec">${ti}</h2><di
 function calc(){const v=parseFloat($("#jpy")?.value)||0,r=parseFloat($("#rate")?.value)||0;if(!$("#twd"))return;if(r)store("tp-rate-"+curOf(),r);$("#twd").textContent="NT$ "+Math.round(v*r).toLocaleString();
  $("#qk").innerHTML=[1000,5000,10000,20000].map(x=>`<button data-a="q" data-v="${x}"><small>${x.toLocaleString()}</small>NT$${Math.round(x*r).toLocaleString()}</button>`).join("")}
 function renderNow(t){const ids=["now","tix","storm","yen","pack"],emp=emptyNow();
- const f={now:t=>bar(1)+nowCard(t),tix:t=>bar()+tixHTML(t),storm:t=>bar()+stormHTML(t),yen:t=>bar()+yenHTML(t),pack:t=>bar()+packHTML(t)};ids.forEach(i=>{$("#t-"+i).innerHTML=t?f[i](t):emp});calc();if(t)MiniMap.render("nowmap",ptsOf(t),pickPt)}
+ const f={now:t=>bar(1)+nowCard(t),tix:t=>bar()+tixHTML(t),storm:t=>bar()+stormHTML(t),yen:t=>bar()+yenHTML(t),pack:t=>bar()+packHTML(t)};ids.forEach(i=>{$("#t-"+i).innerHTML=t?f[i](t):emp});calc();if(t){MiniMap.render("nowmap",ptsOf(t),pickPt);try{buildFood(t)}catch(e){}}}
 
 /* now view */
 const bkList=t=>[...(t.booking||[])];
@@ -96,27 +96,27 @@ const okUrl=u=>/^https?:\/\//i.test(u||"");
 const bookHTML=t=>{const L=bkList(t);return`<h3>🏨 Booking</h3>${L.length?L.map(b=>`<div class="row"><span>${esc(b.n)}<br><small class="meta">${esc(b.c||"尚未填寫")}</small></span><span>${b.c?`<button class="cb" data-a="cp" data-v="${esc(b.c)}">複製</button>`:""}${okUrl(b.u)?`<a class="cb" href="${esc(b.u)}" target="_blank" rel="noopener">☁️ PDF</a>`:""}</span></div>`).join(""):'<p class="meta">還沒有項目，請到「票券與預約」新增。</p>'}`};
 const dietHTML=t=>`<h3>🥬 飲食溝通日文卡</h3><div class="jp" id="jp">${esc(t.diet)}</div><div class="pills"><button class="pill" data-a="cp" data-v="${esc(t.diet)}">複製日文</button></div>`;
 const sosHTML=t=>`<h3>🆘 緊急聯絡／保險</h3>${t.sos.map(s=>`<div class="row"><span>${esc(s[0])}</span>${s[2]?`<a class="cb" href="${s[2]}">${esc(s[1])}</a>`:`<b>${esc(s[1])}</b>`}</div>`).join("")}<p class="meta" style="margin-top:8px">請先把空白欄位填進 trips.json。</p>`;
-const itm=(x,di,ii)=>`<div class="it ${x.type||""}"><div class="tm">${esc(x.t)}</div><div class="bd"><b>${esc(x.h)}</b>${x.type==="crit"?'<em class="tag">重要班次</em>':""}${x.d?`<p>${esc(x.d)}</p>`:""}${x.q?`<a class="cb" href="https://maps.google.com/?q=${encodeURIComponent(x.q)}" target="_blank" rel="noopener">📍 開啟地圖</a>`:""}${x.more?`<details><summary>備案／說明</summary><p>${esc(x.more)}</p></details>`:""}</div><div class="act ed"><button class="cb" data-a="edititem" data-v="${di}:${ii}" aria-label="編輯"><i class=i-edit></i></button><button class="cb" data-a="delitem" data-v="${di}:${ii}" aria-label="刪除">✕</button></div></div>`;
+const itm=(x,di,ii)=>`<div class="it ${x.type||""}"><div class="tm">${esc(x.t)}</div><div class="bd"><b>${esc(x.h)}</b>${x.type==="crit"?'<em class="tag">重要班次</em>':""}${x.d?`<p>${esc(x.d)}</p>`:""}${dietWarn(x,T0())}${x.q?`<a class="cb" href="https://maps.google.com/?q=${encodeURIComponent(x.q)}" target="_blank" rel="noopener">📍 開啟地圖</a>`:""}${x.more?`<details><summary>備案／說明</summary><p>${esc(x.more)}</p></details>`:""}</div><div class="act ed"><button class="cb" data-a="edititem" data-v="${di}:${ii}" aria-label="編輯"><i class=i-edit></i></button><button class="cb" data-a="delitem" data-v="${di}:${ii}" aria-label="刪除">✕</button></div></div>`;
 const tabsHTML=(t,di)=>getDays(t).map((d,i)=>`<button class="${i===di?"on":""}" data-a="day" data-v="${i}">${esc(d.k)}</button>`).join("")+'<button class="plus ed" data-a="addday" aria-label="新增一天">＋</button>';
 const dayHTML=(t,i)=>{const d=getDays(t)[i];if(!d)return'<div class="glass blk"><p class="meta">還沒有每日行程。開啟「編輯模式」後，按上方「＋」新增第一天。</p></div>';
  return`<div class="glass ov"><h3>${esc(d.k)}${d.city?"｜"+esc(d.city):""}</h3><p>${esc(d.date||"")}${d.wx||d.tp?"　"+esc(d.wx||"")+" "+esc(d.tp||""):""}</p>${d.pos?`<p>${esc(d.pos)}</p>`:""}</div>${d.items.map((x,j)=>itm(x,i,j)).join("")||'<p class="meta" style="margin:8px 4px">這天還沒有行程項目。</p>'}<div class="pills ed"><button class="pill" data-a="additem" data-v="${i}">＋ 新增景點／行程</button><button class="pill gl" data-a="editday" data-v="${i}">編輯本日</button><button class="pill gl" data-a="delday" data-v="${i}">刪除本日</button></div>`};
 function todayIdx(t){const n=new Date(),s=new Date((t.startDate||"")+"T00:00"),k=Math.floor((n-s)/864e5);return k>=0&&k<getDays(t).length?k:0}
 function nowCard(t){const D=getDays(t),hsp=t.hotspots&&t.mapImage,di=Math.min(dayI[t.id]??todayIdx(t),Math.max(0,D.length-1)),n=nd(t);dayI[t.id]=di;
  return`<article class="glass dark hero"><small>${flagOf(t)} 當前行程</small><h2>${esc(t.title)}</h2><p>${esc(t.startDate||"日期未定")}${t.endDate?" – "+esc(t.endDate.slice(5)):""}・${n} 天${(t.members||[]).length>1?`・👥 ${t.members.length} 人共編`:""}</p>${t.notes?`<p>${esc(t.notes)}</p>`:""}<div class="cdp" id="cd"></div>
- <div class="pills"><button class="pill lt" data-a="m" data-v="book">🏨 Booking</button><button class="pill lt" data-a="members">👥 成員</button>${t.diet?'<button class="pill lt" data-a="m" data-v="diet">🥬 飲食卡</button>':""}${t.sos?'<button class="pill lt" data-a="m" data-v="sos">🆘 緊急</button>':""}</div></article>
+ <div class="pills"><button class="pill lt" data-a="m" data-v="book">🏨 Booking</button><button class="pill lt" data-a="members">👥 成員</button>'<button class="pill lt" data-a="m" data-v="diet">🥬 飲食卡</button>'${t.sos?'<button class="pill lt" data-a="m" data-v="sos">🆘 緊急</button>':""}</div></article>
  ${hsp?`<h2 class="sec">熱點地圖</h2><div class="glass blk"><div class="mapw"><div class="mz" id="mz"><img src="${esc(t.mapImage)}" alt="手繪旅行地圖">${t.hotspots.map((h,i)=>`<button class="hs" aria-label="${esc(h.name)}" style="left:${h.x/t.mapSize[0]*100}%;top:${h.y/t.mapSize[1]*100}%" data-a="hs" data-v="${i}"></button>`).join("")}</div></div><div class="mi" id="mi">👆 點地圖上的地點，會放大並顯示當天資訊</div></div>`:""}
  <h2 class="sec">實際地圖</h2><div class="glass mapbox"><div id="nowmap" class="nowmap" role="application" aria-label="當前行程地圖"></div></div><div class="mi" id="mi2">👆 點黑點看當天行程簡介；再點同一個黑點可回到全覽</div><p class="meta" style="margin:6px 4px 0">新增景點時填寫「地點」，就會自動標在地圖上。</p>
  <h2 class="sec">每日行程</h2><div class="days" id="dtabs">${tabsHTML(t,di)}</div><div id="dayblk">${dayHTML(t,di)}</div>`}
 function ptsOf(t){const P=[];getDays(t).forEach((d,i)=>d.items.forEach(x=>{if(x.lat!=null)P.push({lat:x.lat,lng:x.lng,day:i,dayLabel:`${d.k} ${d.date||""}`.trim(),time:x.t||"",title:x.h,place:x.q||"",note:x.d||""})}));(t.spots||[]).forEach(s=>P.push({lat:s.lat,lng:s.lng,day:(s.day||1)-1,dayLabel:s.day?"D"+s.day:"",time:"",title:s.name,place:"",note:""}));return P}
 function refreshDays(t){const D=getDays(t),di=Math.min(dayI[t.id]??0,Math.max(0,D.length-1));dayI[t.id]=di;$("#dtabs").innerHTML=tabsHTML(t,di);$("#dayblk").innerHTML=dayHTML(t,di);MiniMap.render("nowmap",ptsOf(t),pickPt)}
 async function saveItem(){const t=T0(),f=document.querySelector(".fm"),di=+f.dataset.di,ii=f.dataset.ii===""?null:+f.dataset.ii,v=i=>$("#fi-"+i).value.trim(),h=v("h");if(!h)return toast("請填寫標題");
- const D=getDays(t),day=D[di],old=ii!=null?day.items[ii]:{},x={...old,t:v("t"),h,d:v("d"),q:v("q")};
+ const D=getDays(t),day=D[di],old=ii!=null?day.items[ii]:{},x={...old,t:v("t"),h,d:v("d"),q:v("q")};{const dg=[...document.querySelectorAll(".rtg:checked")].map(e=>e.value);if(dg.length)x.diet=dg;else delete x.diet}
  if(x.q&&(x.q!==old.q||x.lat==null)){toast("查詢座標中…");const g=await geo(x.q+(t.country?" "+t.country:""));if(g){x.lat=g[0];x.lng=g[1]}else{delete x.lat;delete x.lng;toast("找不到座標，地圖不會標記")}}
  if(!x.q){delete x.lat;delete x.lng}
  if(ii!=null)day.items[ii]=x;else{let k=day.items.length;if(isT(x.t)){const n=day.items.findIndex(y=>isT(y.t)&&y.t.padStart(5,"0")>x.t.padStart(5,"0"));if(n>=0)k=n}day.items.splice(k,0,x)}
  setDays(t,D);$("#modal").classList.remove("on");refreshDays(t)}
 function itemForm(di,ii){const t=T0(),x=ii!=null?getDays(t)[di].items[ii]:{};
- modal(`<h3>${ii!=null?"編輯項目":"新增景點／行程"}</h3><div class="fm" data-di="${di}" data-ii="${ii??""}"><label>時間<input id="fi-t" value="${esc(x.t)}" placeholder="例如 09:30（可留空或寫「下午」）"></label><label>標題<input id="fi-h" value="${esc(x.h)}" placeholder="例如 美瑛青池"></label><label>備註<textarea id="fi-d" rows="3">${esc(x.d)}</textarea></label><label>地點（地圖標記與導航用，可留空）<input id="fi-q" value="${esc(x.q)}" placeholder="例如 青池 美瑛"></label><div class="pills"><button class="pill" data-a="saveitem"><span class="dot">✓</span>儲存</button></div></div>`)}
+ modal(`<h3>${ii!=null?"編輯項目":"新增景點／行程"}</h3><div class="fm" data-di="${di}" data-ii="${ii??""}"><label>時間<input id="fi-t" value="${esc(x.t)}" placeholder="例如 09:30（可留空或寫「下午」）"></label><label>標題<input id="fi-h" value="${esc(x.h)}" placeholder="例如 美瑛青池"></label><label>備註<textarea id="fi-d" rows="3">${esc(x.d)}</textarea></label><label>地點（地圖標記與導航用，可留空）<input id="fi-q" value="${esc(x.q)}" placeholder="例如 青池 美瑛"></label><div class="splits"><small class="meta">餐廳飲食屬性（選填；也會自動從名稱與備註推測）</small>${RT.map(([c,n])=>`<label class="chk"><input type="checkbox" class="rtg" value="${c}" ${(x.diet||[]).includes(c)?"checked":""}> ${n}</label>`).join("")}</div><div class="pills"><button class="pill" data-a="saveitem"><span class="dot">✓</span>儲存</button></div></div>`)}
 function dayForm(i){const t=T0(),d=i!=null?getDays(t)[i]:{};
  modal(`<h3>${i!=null?"編輯本日":"新增一天"}</h3><div class="fm" data-i="${i??""}"><label>城市／主題<input id="fd-c" value="${esc(d.city)}" placeholder="例如 皇后鎮"></label><label>日期（留空會依出發日自動帶入）<input id="fd-date" value="${esc(d.date)}" placeholder="例如 3/12（四）"></label><label>當天重點<input id="fd-p" value="${esc(d.pos)}"></label><div class="pills"><button class="pill" data-a="saveday"><span class="dot">✓</span>儲存</button></div></div>`)}
 function saveDay(){const t=T0(),f=document.querySelector(".fm"),i=f.dataset.i===""?null:+f.dataset.i,D=getDays(t),c=$("#fd-c").value.trim(),p=$("#fd-p").value.trim();let date=$("#fd-date").value.trim();
@@ -158,7 +158,7 @@ async function saveForm(){if(!me)return toast("請先登入");
  const s=v("e")&&v("s")?v("s"):v("s"),e=v("e"),nDays=s&&e?Math.max(1,Math.round((new Date(e)-new Date(s))/864e5)+1):(old?.nDays||1);
  const base={title:place,country,countryCode:FL[country]||"",startDate:s,endDate:e,image:img,notes:v("note"),nDays,spots},st=v("st");
  try{if(old){await patch(old,base);if(st==="now")await archiveNow(old.id);await setSt(old,st)}
- else{if(st==="now")await archiveNow("");const ref=doc(collection(db,"trips"));await setDoc(ref,{...clean({...base,days:[],booking:[],expenses:[],currency:CUR[country]||"TWD",lightSplitUrl:"",owner:me.uid,members:[me.uid],memberNames:{[me.uid]:me.displayName||"我"},st:{[me.uid]:st}}),createdAt:serverTimestamp()})}
+ else{if(st==="now")await archiveNow("");const ref=doc(collection(db,"trips"));await setDoc(ref,{...clean({...base,days:[],booking:[],expenses:[],currency:CUR[country]||"TWD",lightSplitUrl:"",diets:{},ext:EXT0,owner:me.uid,members:[me.uid],memberNames:{[me.uid]:me.displayName||"我"},st:{[me.uid]:st}}),createdAt:serverTimestamp()})}
  $("#modal").classList.remove("on");toast("已儲存")}catch(err){toast("儲存失敗："+(err.code||err.message))}}
 
 function render(){const v=visible(),by=s=>v.filter(t=>t.status===s);zm=null;
@@ -228,6 +228,14 @@ if(b.closest("#drawer")&&a&&a!=="menu")document.body.classList.remove("dr");
  if(a==="tplreset"&&t){if(TPL&&confirm("將每日行程與地圖標點重設為最新範例？你在每日行程上的修改會被覆蓋。"))patch(t,{days:TPL.days,spots:TPL.spots}).then(()=>{refreshDays(T0());toast("已重設為最新範例")});return}
  if(a==="fixold"&&t){const c=cfg(t);modal(`<h3>整理舊帳目</h3><p class="meta">這些名稱不是目前的成員。請選擇每個名稱要歸給哪位成員，套用後帳本與結算會自動更新。</p><div class="fm">${c.orphans.map(o=>`<label>${esc(lbl(t,o))}<select class="fi" data-orph="${esc(o)}"><option value="">（暫不處理）</option>${c.members.map(m=>`<option value="${esc(m)}">${esc(nameOf(t,m))}</option>`).join("")}</select></label>`).join("")}<div class="pills"><button class="pill" data-a="fixapply">套用</button></div></div>`);return}
  if(a==="fixapply"&&t){const map={};document.querySelectorAll("[data-orph]").forEach(x=>{if(x.value)map[x.dataset.orph]=x.value});const L=exList(t).map(e=>({...e,paidBy:map[e.paidBy]||e.paidBy,splitWith:[...new Set((e.splitWith||[]).map(k=>map[k]||k))]}));saveEx(t,L);$("#modal").classList.remove("on");$("#t-yen").innerHTML=bar()+yenHTML(t);calc();toast("已整理舊帳目");return}
+ if(a==="m"&&v==="diet"){openFood(T0());return}
+ if(a==="flang"){FLANG=v;store("tp-flang",v);renderFood();return}
+ if(a==="cpfood"){const X=((FOOD&&FOOD.cards[FLANG])||[]).map(l=>l.p).join("\n");X?copy(X,"已複製文案"):toast("沒有可複製的文案");return}
+ if(a==="focus"){focusCard();return}
+ if(a==="fclang"){FLANG=v;store("tp-flang",v);focusCard();return}
+ if(a==="fclose"){closeFocus();return}
+ if(a==="editdiet"&&t){dietForm(v);return}
+ if(a==="savediet"&&t){saveDiet(t);return}
  if(a==="close")$("#modal").classList.remove("on");
  else if(a==="cp")copy(v);
  else if(a==="m"&&t)modal({book:bookHTML,diet:dietHTML,sos:sosHTML}[v](t));
@@ -251,7 +259,8 @@ function renderDrawer(){const t=T0(),nm=t?(t.short||t.title):"",b=(id,c)=>`<butt
  $("#crumb").textContent=SUB.includes(cur)?`${t?nm:"當前旅程"} › ${LB[cur]}`:LB[cur]}
 
 /* ---- auth / invite / template / migration ---- */
-const emptyNow=()=>!FB_OK?'<div class="glass blk"><p>尚未設定 Firebase。請依說明填入 firebase-config.js 後重新整理。</p></div>':me?'<div class="glass blk"><p>無當前行程，請新增行程或輸入邀請碼</p><div class="pills"><button class="pill" data-a="add" data-v="now"><span class="dot">＋</span>新增行程</button><button class="pill gl" data-a="join">🔑 輸入邀請碼</button><button class="pill gl" data-a="tpl">📥 匯入範例：北海道</button></div></div>':'<div class="glass blk"><p>無當前行程，請登入後新增行程或輸入邀請碼</p><div class="pills"><button class="pill" data-a="auth">Google 一鍵登入</button></div></div>';
+const emptyNow0=()=>!FB_OK?'<div class="glass blk"><p>尚未設定 Firebase。請依說明填入 firebase-config.js 後重新整理。</p></div>':me?'<div class="glass blk"><p>無當前行程，請新增行程或輸入邀請碼</p><div class="pills"><button class="pill" data-a="add" data-v="now"><span class="dot">＋</span>新增行程</button><button class="pill gl" data-a="join">🔑 輸入邀請碼</button><button class="pill gl" data-a="tpl">📥 匯入範例：北海道</button></div></div>':'<div class="glass blk"><p>無當前行程，請登入後新增行程或輸入邀請碼</p><div class="pills"><button class="pill" data-a="auth">Google 一鍵登入</button></div></div>';
+const emptyNow=()=>emptyNow0()+(foodSnap()?'<div class="pills" style="margin-top:10px"><button class="pill gl" data-a="m" data-v="diet">🥬 飲食卡（離線快照）</button></div>':"");
 function drawerExtra(){return me?`<p class="grp">👤 ${esc(me.displayName||me.email||"我")}</p><button data-a="add" data-v="now">＋ 新增行程</button><button data-a="join">🔑 輸入邀請碼</button><button data-a="tpl">📥 匯入範例：北海道</button><button data-a="auth">登出</button>`:`<p class="grp">帳戶</p><button class="login" data-a="auth">Google 一鍵登入</button>`}
 async function login(){const p=new GoogleAuthProvider();try{await signInWithPopup(auth,p)}catch(e){if(e.code==="auth/popup-blocked"||e.code==="auth/operation-not-supported-in-this-environment")signInWithRedirect(auth,p);else if(e.code!=="auth/popup-closed-by-user")toast("登入失敗："+e.code)}}
 async function ensureInvite(t){if(t.inviteCode)return t.inviteCode;for(let i=0;i<3;i++){const c=rnd(6);try{await setDoc(doc(db,"invites",c),{tripId:t.id,owner:me.uid});await updateDoc(tdoc(t),{inviteCode:c});t.inviteCode=c;return c}catch(e){}}return null}
@@ -262,7 +271,7 @@ async function joinTrip(code){code=code.trim().toUpperCase();if(!code){toast("�
  try{await updateDoc(doc(db,"trips",id),{lastJoinCode:code,members:arrayUnion(me.uid),["memberNames."+me.uid]:me.displayName||"成員",["st."+me.uid]:has?"future":"now"})}catch(e){console.error("[joinTrip] 寫入 trips/"+id+" 失敗",{code:e.code,message:e.message,uid:me.uid,inviteCode:code},e);throw e}toast("已加入行程");go(has?"future":"now");return true}
 async function createFromTpl(extra){const {id,expensesConfig,owner,status,...rest}=TPL;await archiveNow("");
  const ref=doc(collection(db,"trips"));
- await setDoc(ref,{...ser({...rest,booking:[],expenses:[],lightSplitUrl:expensesConfig.lightSplitUrl,currency:expensesConfig.currency,templateId:id,owner:me.uid,members:[me.uid],memberNames:{[me.uid]:me.displayName||"我"},st:{[me.uid]:"now"},...extra}),createdAt:serverTimestamp()})}
+ await setDoc(ref,{...ser({...rest,booking:[],expenses:[],lightSplitUrl:expensesConfig.lightSplitUrl,currency:expensesConfig.currency,templateId:id,diets:{},ext:EXT0,owner:me.uid,members:[me.uid],memberNames:{[me.uid]:me.displayName||"我"},st:{[me.uid]:"now"},...extra}),createdAt:serverTimestamp()})}
 async function importTpl(){if(!TPL)return toast("範例資料載入失敗");if(TRIPS.some(x=>x.templateId===TPL.id)&&!confirm("你已經匯入過北海道範例，要再匯入一份嗎？"))return;
  try{await createFromTpl({});go("now");toast("已匯入北海道範例")}catch(e){toast("匯入失敗："+(e.code||e.message))}}
 async function migrate(){if(!me||!TPL||sessionStorage.getItem("tp-mig"))return;const P="hokkaido-2027",J=k=>{try{return JSON.parse(load(k))}catch(e){return null}};
@@ -286,3 +295,61 @@ function pickPt(p){const t=T0();if(!t)return null;const d=getDays(t)[p.day]||{},
  const b=el.querySelector("[data-ppday]");if(b)b.addEventListener("click",()=>{dayI[t.id]=p.day;$("#dayblk").innerHTML=dayHTML(t,p.day);document.querySelectorAll("#dtabs button").forEach((x,n)=>x.classList.toggle("on",n===p.day));$("#dtabs").scrollIntoView({behavior:"smooth"})});
  return el}
 window.__tp=true;
+
+/* ===== P0：飲食安全卡 Food Safety Guard =====
+   資料：trip.diets = { [uid]: { tags:[], note:"", flex:bool } }
+   預留（P1/P2）：trip.ext = { liveEvents:[], mealLedger:{}, offlinePack:{}, phrasebook:{} }，詳見 SCHEMA.md */
+const EXT0={liveEvents:[],mealLedger:{},offlinePack:{},phrasebook:{}};
+const DTAGS=[["ovo","蛋奶素"],["wuxin","五辛素"],["vegan","全素"],["nobeef","不吃牛肉"],["nopork","不吃豬肉"],["noseafood","不吃海鮮"],["nutallergy","堅果過敏"]];
+const TAGX={ovo:["meat","sea","dashi","mext"],wuxin:["meat","sea","dashi","mext","wux"],vegan:["meat","sea","dashi","mext","egg","dairy"],nobeef:["beef"],nopork:["pork"],noseafood:["sea","dashi"],nutallergy:["nut"]};
+const TERM={meat:["肉類","肉類","meat"],sea:["魚介類","魚介類","fish and seafood"],dashi:["柴魚高湯","鰹節（出汁）","bonito flakes and dashi stock"],mext:["肉類萃取物","肉エキス","meat extract"],beef:["牛肉","牛肉・牛エキス","beef and beef extract"],pork:["豬肉","豚肉・ラード","pork and lard"],wux:["五辛（蔥蒜韭等）","ネギ・ニンニク・ニラ・玉ねぎ","onion, garlic and leek"],egg:["蛋","卵","eggs"],dairy:["乳製品","乳製品","dairy"],nut:["堅果類","ナッツ類","nuts"]};
+const ORDER=["meat","sea","dashi","mext","beef","pork","wux","egg","dairy","nut"];
+const LANGS=[["zh","繁體中文"],["ja","日本語"],["en","English"]];
+const FLEXRE=/鍋邊素|彈性|可接受|接受|方便|不給.{0,4}麻煩|不影響/;
+const isFlex=d=>!!(d&&(d.flex||FLEXRE.test(d.note||"")));
+let FLANG=load("tp-flang")||"zh",FOOD=null;
+function foodModel(diets,members,names){const strict=new Set,soft=new Set,allergy=new Set;let veg=false;
+ const rows=members.map(u=>{const d=diets[u]||{},tags=d.tags||[];tags.forEach(tg=>{if(["ovo","wuxin","vegan"].includes(tg))veg=true;(TAGX[tg]||[]).forEach(k=>{if(k==="nut")allergy.add(k);else(isFlex(d)?soft:strict).add(k)})});return{u,name:names[u]||u,tags,note:d.note||"",flex:isFlex(d)}});
+ strict.forEach(k=>soft.delete(k));const o=ks=>ORDER.filter(k=>ks.has(k));
+ return{rows,strict:o(strict),soft:o(soft),allergy:o(allergy),ok:veg&&!strict.has("egg")&&!strict.has("dairy")?["egg","dairy"]:[]}}
+function foodLines(m,L){const sep=L===2?", ":"・",nm=ks=>ks.map(k=>TERM[k][L]);
+ const mk=(ks,fn)=>{const a=nm(ks);return{h:fn(a.map(x=>`<b class="hl">${esc(x)}</b>`).join(sep)),p:fn("【"+a.join(sep)+"】")}},out=[];
+ if(m.strict.length){const ok=m.ok.length?nm(m.ok).join(sep):"";out.push(mk(m.strict,X=>[`我們團隊有人不能吃${X}。${ok?ok+"可以。":""}請問有可以提供的餐點嗎？`,`すみません、私たちのグループには${X}が食べられない人がいます。${ok?ok+"は大丈夫です。":""}対応可能なメニューはありますか？`,`Excuse me, some people in our group cannot eat ${X}. ${ok?ok+" are OK. ":""}Do you have any suitable dishes?`][L]))}
+ if(m.soft.length)out.push(mk(m.soft,X=>[`${m.strict.length?"另外，":""}也有人希望盡量避開${X}，只要稍微避開湯底或配料就可以，不需要特別為我們麻煩，謝謝。`,`${m.strict.length?"また、":"すみません、"}できれば${X}を避けたい人もいます。スープや具材を少し避ければ対応可能であれば助かります。無理のない範囲で結構です。`,`${m.strict.length?"Also, s":"Excuse me, s"}ome of us would prefer to avoid ${X}. If you can simply leave out the broth or ingredients, that would help — please don't go out of your way.`][L]));
+ if(m.allergy.length)out.push(mk(m.allergy,X=>[`有人對${X}過敏，即使少量也不能吃，請特別留意。`,`${X}のアレルギーがある人がいます。少量でも食べられませんので、ご確認をお願いします。`,`Someone in our group has an allergy to ${X}. Even a small amount is not safe — please check carefully.`][L]));
+ return out}
+function buildFood(t){const m=foodModel(t.diets||{},t.members||[],t.memberNames||{}),cards={};LANGS.forEach(([c],i)=>cards[c]=foodLines(m,i));
+ const f={id:t.id,title:t.title,ts:Date.now(),rows:m.rows,cards,legacy:t.diet||"",live:true};
+ try{localStorage.setItem("tp-food-"+t.id,JSON.stringify({...f,live:false}));localStorage.setItem("tp-food-last",t.id)}catch(e){}return f}
+function foodSnap(){try{const id=load("tp-food-last");return id?JSON.parse(load("tp-food-"+id)):null}catch(e){return null}}
+function openFood(t){FOOD=t?buildFood(t):foodSnap();if(!FOOD)return toast("目前沒有飲食卡資料");renderFood()}
+function renderFood(){const f=FOOD,k=LANGS.some(x=>x[0]===FLANG)?FLANG:"zh",ls=f.cards[k]||[],tg=x=>(DTAGS.find(d=>d[0]===x)||[0,x])[1];
+ const rows=f.rows.map(r=>`<div class="frow"><div><b>${esc(r.name)}</b> ${r.tags.length?r.tags.map(x=>`<span class="ftag">${esc(tg(x))}</span>`).join(""):'<span class="meta">未設定</span>'}${r.flex?'<span class="ftag soft">可彈性</span>':""}${r.note?`<p class="meta">${esc(r.note)}</p>`:""}</div>${f.live?`<button class="cb ed" data-a="editdiet" data-v="${esc(r.u)}" aria-label="編輯飲食"><i class=i-edit></i></button>`:""}</div>`).join("");
+ modal(`<h3>🥬 飲食溝通卡</h3><div class="lang">${LANGS.map(([c,n])=>`<button class="${c===k?"on":""}" data-a="flang" data-v="${c}">${n}</button>`).join("")}</div>
+ <h4 class="meta" style="margin:14px 0 4px">團隊成員飲食${f.live?"（編輯模式下可修改）":"（離線快照）"}</h4>${rows}
+ <h4 class="meta" style="margin:14px 0 6px">溝通文案</h4><div class="foodcard">${ls.length?ls.map(l=>`<p>${l.h}</p>`).join(""):(k==="ja"&&f.legacy?`<p>${esc(f.legacy)}</p>`:'<p class="meta">尚未設定任何成員的飲食偏好。開啟編輯模式後，可為每位成員設定。</p>')}</div>
+ <div class="pills"><button class="pill" data-a="cpfood">複製文案</button><button class="pill" data-a="focus">🔍 現場大字卡</button></div>`)}
+function focusCard(){const k=FLANG==="zh"?"ja":FLANG;let el=$("#focus");if(!el){el=document.createElement("div");el.id="focus";document.body.appendChild(el)}
+ const ls=(FOOD&&FOOD.cards[k])||[];FLANG=k;
+ el.innerHTML=`<div class="fbar"><div class="lang">${[["ja","日本語"],["en","English"]].map(([c,n])=>`<button class="${c===k?"on":""}" data-a="fclang" data-v="${c}">${n}</button>`).join("")}</div><button class="fclose" data-a="fclose">✕ 結束</button></div><div class="fbody">${ls.map(l=>`<p>${l.h}</p>`).join("")||"<p>（尚未設定飲食偏好）</p>"}</div>`;
+ el.classList.add("on");try{document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen().catch(()=>{})}catch(e){}}
+function closeFocus(){const el=$("#focus");if(el)el.classList.remove("on");try{document.fullscreenElement&&document.exitFullscreen()}catch(e){}}
+function dietForm(u){const t=T0(),d=(t.diets&&t.diets[u])||{};modal(`<h3>編輯飲食：${esc(nameOf(t,u))}</h3><div class="fm" data-u="${esc(u)}"><div class="splits">${DTAGS.map(([c,n])=>`<label class="chk"><input type="checkbox" class="dtg" value="${c}" ${(d.tags||[]).includes(c)?"checked":""}> ${n}</label>`).join("")}</div><label class="chk"><input type="checkbox" id="df-flex" ${d.flex?"checked":""}> 可彈性處理（接受鍋邊素、不想給店家添麻煩）</label><label>彈性與極限備註<textarea id="df-note" rows="3" placeholder="例如：接受鍋邊素／香料味不重可接受／主要求方便、不給店家添麻煩">${esc(d.note)}</textarea></label><div class="pills"><button class="pill" data-a="savediet"><span class="dot">✓</span>儲存</button></div></div>`)}
+async function saveDiet(t){const u=document.querySelector(".fm").dataset.u,diets={...(t.diets||{}),[u]:{tags:[...document.querySelectorAll(".dtg:checked")].map(x=>x.value),note:$("#df-note").value.trim(),flex:$("#df-flex").checked}};
+ await patch(t,{diets});openFood(t);toast("已儲存飲食設定")}
+/* 餐廳 × 成員忌口 自動比對 */
+const RT=[["has_vegetarian","有素食餐點"],["contains_dashi","含柴魚高湯"],["no_vegetarian","幾乎無素食"],["beef_only","牛肉為主"],["seafood_focus","海鮮為主"]];
+const RESTRE=/餐|食|咖哩|拉麵|ラーメン|壽司|寿司|燒肉|焼肉|丼|料理|食堂|レストラン|カフェ|cafe|restaurant|ramen|居酒屋|蕎麥|そば|うどん|烏龍/i;
+function inferRT(x){const s=[x.h,x.d,x.more].join(" "),r=new Set(x.diet||[]);
+ if(/素食|ベジ|vegan|vegetarian/i.test(s))r.add("has_vegetarian");
+ if(/拉麵|ラーメン|蕎麥|そば|うどん|烏龍|柴魚|鰹|出汁|關東煮|おでん/i.test(s))r.add("contains_dashi");
+ if(/燒肉|焼肉|牛排|ステーキ|烤肉|成吉思汗|ジンギスカン|豚骨|牛舌/i.test(s)){r.add("no_vegetarian");if(/牛/.test(s))r.add("beef_only")}
+ if(/壽司|寿司|海鮮|刺身|螃蟹|蟹/i.test(s))r.add("seafood_focus");
+ if(r.has("has_vegetarian"))r.delete("no_vegetarian");return r}
+function dietWarn(x,t){if(!t||!t.diets||!Object.keys(t.diets).length)return"";if(!((x.diet&&x.diet.length)||RESTRE.test((x.h||"")+" "+(x.d||""))))return"";
+ const tg=inferRT(x),W=[],nm=us=>us.map(u=>nameOf(t,u)).join("、"),who=f=>(t.members||[]).filter(u=>{const d=t.diets[u];return d&&!isFlex(d)&&f(d.tags||[])});
+ const veg=who(a=>a.some(z=>["ovo","wuxin","vegan"].includes(z)));if(veg.length&&(tg.has("no_vegetarian")||tg.has("beef_only")||tg.has("seafood_focus")))W.push(`${nm(veg)} 嚴格素食，此餐廳可選擇餐點較少`);
+ const ds=who(a=>a.some(z=>(TAGX[z]||[]).includes("dashi")));if(ds.length&&tg.has("contains_dashi")&&!(x.diet||[]).includes("has_vegetarian"))W.push(`${nm(ds)} 不能吃柴魚高湯，此餐廳可能使用出汁`);
+ const nb=who(a=>a.includes("nobeef"));if(nb.length&&tg.has("beef_only"))W.push(`${nm(nb)} 不吃牛肉，此餐廳以牛肉為主`);
+ const ns=who(a=>a.includes("noseafood"));if(ns.length&&tg.has("seafood_focus"))W.push(`${nm(ns)} 不吃海鮮，此餐廳以海鮮為主`);
+ return W.map(w=>`<div class="dwarn">⚠️ 注意：${esc(w)}</div>`).join("")}
