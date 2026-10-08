@@ -110,12 +110,12 @@ const dayHTML=(t,i)=>{const d=getDays(t)[i];if(!d)return'<div class="glass blk">
 function todayIdx(t){const n=new Date(),s=new Date((t.startDate||"")+"T00:00"),k=Math.floor((n-s)/864e5);return k>=0&&k<getDays(t).length?k:0}
 function nowCard(t){const D=getDays(t),hsp=t.hotspots&&t.mapImage,di=Math.min(dayI[t.id]??todayIdx(t),Math.max(0,D.length-1)),n=nd(t);dayI[t.id]=di;
  return`<article class="glass dark hero"><small>${flagOf(t)} 當前行程</small><h2>${esc(t.title)}</h2><p>${esc(t.startDate||"日期未定")}${t.endDate?" – "+esc(t.endDate.slice(5)):""}・${n} 天${(t.members||[]).length>1?`・${t.members.length} 人共編`:""}</p>${t.notes?`<p>${esc(t.notes)}</p>`:""}<div class="cdp" id="cd"></div>
- <div class="pills"><button class="pill lt" data-a="m" data-v="book">Booking</button><button class="pill lt" data-a="members">成員</button><button class="pill lt" data-a="m" data-v="diet">飲食卡</button><button class="pill lt" data-a="m" data-v="sos">緊急</button></div></article>
+ <div class="pills"><button class="pill lt" data-a="m" data-v="book">Booking</button><button class="pill lt" data-a="members">成員</button><button class="pill lt" data-a="goyen">公費</button><button class="pill lt" data-a="m" data-v="diet">飲食卡</button><button class="pill lt" data-a="m" data-v="sos">緊急</button></div></article>
  <div id="live" class="glass blk live">${liveHTML(t)}</div>
- ${hsp?`<h2 class="sec">熱點地圖</h2><div class="glass blk"><div class="mapw"><div class="mz" id="mz"><img src="${esc(t.mapImage)}" alt="手繪旅行地圖">${t.hotspots.map((h,i)=>`<button class="hs" aria-label="${esc(h.name)}" style="left:${h.x/t.mapSize[0]*100}%;top:${h.y/t.mapSize[1]*100}%" data-a="hs" data-v="${i}"></button>`).join("")}</div></div><div class="mi" id="mi">點地圖上的地點，會放大並顯示當天資訊</div></div>`:""}
+ 
  <h2 class="sec">實際地圖</h2><div class="glass mapbox"><div id="nowmap" class="nowmap" role="application" aria-label="當前行程地圖"></div></div><div class="mi" id="mi2">點擊地圖地標查看當天摘要</div><p class="meta" style="margin:6px 4px 0">新增景點時填寫「地點」，就會自動標在地圖上。</p>
  <h2 class="sec">每日行程</h2><div class="days" id="dtabs">${tabsHTML(t,di)}</div><div id="dayblk">${daysAcc(t,di)}</div>`}
-function ptsOf(t){const P=[];getDays(t).forEach((d,i)=>d.items.forEach(x=>{if(x.lat!=null)P.push({lat:x.lat,lng:x.lng,day:i,dayLabel:`${d.k} ${d.date||""}`.trim(),time:x.t||"",title:x.h,place:x.q||"",note:x.d||""})}));(t.spots||[]).forEach(s=>P.push({lat:s.lat,lng:s.lng,day:(s.day||1)-1,dayLabel:s.day?"D"+s.day:"",time:"",title:s.name,place:"",note:""}));return P}
+function ptsOf(t){const P=[];getDays(t).forEach((d,i)=>d.items.forEach(x=>{if(x.lat!=null)P.push({lat:x.lat,lng:x.lng,day:i,dayLabel:`${d.k} ${d.date||""}`.trim(),time:x.t||"",title:x.h,place:x.q||"",note:x.d||""})}));(t.spots||[]).forEach(s=>P.push({lat:s.lat,lng:s.lng,day:(s.day||1)-1,dayLabel:s.day?"D"+s.day:"",time:"",title:s.name,place:"",note:s.note||""}));return P}
 function refreshDays(t){const D=getDays(t),di=Math.min(dayI[t.id]??0,Math.max(0,D.length-1));dayI[t.id]=di;$("#dtabs").innerHTML=tabsHTML(t,di);$("#dayblk").innerHTML=daysAcc(t,di);MiniMap.render("nowmap",ptsOf(t),pickPt)}
 async function saveItem(){const t=T0(),f=document.querySelector(".fm"),di=+f.dataset.di,ii=f.dataset.ii===""?null:+f.dataset.ii,v=i=>$("#fi-"+i).value.trim(),h=v("h");if(!h)return toast("請填寫標題");
  const D=getDays(t),day=D[di],old=ii!=null?day.items[ii]:{},x={...old,t:v("t"),h,d:v("d"),q:v("q"),more:v("m")};{const dg=[...document.querySelectorAll(".rtg:checked")].map(e=>e.value);if(dg.length)x.diet=dg;else delete x.diet}
@@ -173,7 +173,7 @@ function render(){const v=visible(),by=s=>v.filter(t=>t.status===s);zm=null;
  renderNow(by("now")[0]);
  const real=v.filter(t=>t.status!=="future");
  $("#stats").innerHTML=`<div class="glass stat"><b>${new Set(real.map(t=>t.countryCode||t.country)).size}</b><small>造訪國家</small></div><div class="glass stat"><b>${real.reduce((s,t)=>s+nd(t),0)}</b><small>總天數</small></div><div class="glass stat"><b>${real.length}</b><small>趟旅行</small></div>`;
- MapView.render(v);
+ MapView.render(v);if(cur==="map")MapView.refresh();
  const emp='<p class="empty">還沒有旅程，點上方「＋ 新增旅程」開始記錄</p>';
  $("#l-past").innerHTML=by("past").map(tcard).join("")||emp;$("#l-future").innerHTML=by("future").map(tcard).join("")||emp;renderDrawer();updBar();tick()}
 function tick(){const el=$("#cd"),t=visible().find(x=>x.status==="now"&&!x.locked);if(!el||!t||!t.startDate)return;const now=new Date(),st=new Date(t.startDate+"T00:00");
@@ -244,8 +244,9 @@ if(b.closest("#drawer")&&a&&a!=="menu")document.body.classList.remove("dr");
  if(a==="fclose"){closeFocus();return}
  if(a==="editdiet"&&t){dietForm(v);return}
  if(a==="savediet"&&t){saveDiet(t);return}
+ if(a==="goyen"){go("yen");return}
  if(a==="accday"){const sec=document.getElementById("dacc-"+v);if(sec){const o=sec.classList.toggle("open");b.setAttribute("aria-expanded",o)}return}
- if(a==="print"){document.body.classList.remove("dr");go("now");document.querySelectorAll(".dayacc").forEach(x=>x.classList.add("open"));setTimeout(()=>{try{MiniMap.refresh()}catch(e){}setTimeout(()=>window.print(),350)},150);return}
+ if(a==="print"){document.body.classList.remove("dr");go("now");{const t0=T0();if(t0&&$("#dayblk"))$("#dayblk").innerHTML=getDays(t0).map((_,n)=>dayHTML(t0,n)).join("")}setTimeout(()=>{try{MiniMap.refresh()}catch(e){}setTimeout(()=>window.print(),350)},150);return}
  if(a==="lvnext"||a==="lvprev"||a==="lvauto"){liveStep(a);return}
  if(a==="sosadd"){$("#sosrows").insertAdjacentHTML("beforeend",sosRow(["","",""]));return}
  if(a==="sosdel"){b.closest(".sosr").remove();return}
@@ -254,7 +255,7 @@ if(b.closest("#drawer")&&a&&a!=="menu")document.body.classList.remove("dr");
  else if(a==="cp")copy(v);
  else if(a==="m"&&t)modal({book:bookHTML,diet:dietHTML,sos:sosHTML}[v](t));
  else if(a==="hs"&&t)mapZoom(t,+v);
- else if(a==="day"&&t){focusDay(t,+v)}});
+ else if(a==="day"&&t){focusDay(t,+v,!!b.dataset.go)}});
 $("#modal").addEventListener("click",e=>{if(e.target.id==="modal")$("#modal").classList.remove("on")});
 (async()=>{MapView.init();
  try{const r=JSON.parse(localStorage.getItem("tp-snap")||"null");if(r&&Array.isArray(r.trips)){SNAP={uid:r.uid,name:r.name,ts:r.ts};TRIPS=r.trips}}catch(e){}
@@ -313,7 +314,7 @@ async function resetInvite(t){for(let i=0;i<3;i++){const c=rnd(6);try{await setD
 function pickPt(p){const t=T0();if(!t)return null;const d=getDays(t)[p.day]||{},k=d.k||"",hot=(t.hotspots||[]).find(h=>h.name===p.title),tag=(hot&&hot.note)||p.note||"",meta=[d.date,d.city].filter(Boolean).join(" ")+((d.wx||d.tp)?"・"+[d.wx,d.tp].filter(Boolean).join(" "):"");
  const el=document.createElement("div");el.className="pp";
  el.innerHTML=`<div class="mit"><b>${esc(p.title)}</b>${k?`<span class="chip">${esc(k)}</span>`:""}</div>${tag?`<p class="ptag">${esc(tag)}</p>`:""}${p.time?`<p>${esc(p.time)}</p>`:""}${meta?`<p class="mis">${esc(meta)}</p>`:""}<div class="pills">${k?`<button class="pill" data-ppday="${p.day}">看 ${esc(k)} 行程</button>`:""}<a class="pill gl" href="https://maps.google.com/?q=${p.lat},${p.lng}" target="_blank" rel="noopener">地圖</a></div>`;
- const b=el.querySelector("[data-ppday]");if(b)b.addEventListener("click",()=>focusDay(t,p.day));
+ const b=el.querySelector("[data-ppday]");if(b)b.addEventListener("click",()=>focusDay(t,p.day,true));
  return el}
 window.__tp=true;
 
@@ -389,18 +390,20 @@ function updBar(){let b=$("#offbar");if(!b){b=document.createElement("div");b.id
 
 /* ===== 現場即時模式：現在 / 下一步 ===== */
 let LIVE={sim:false,d:0,i:-1};
-function liveCalc(t){const D=getDays(t);if(!D.length)return null;let d,i;
+function liveCalc(t){const D=getDays(t);if(!D.length)return null;let d,i,off=false,before=false,left=0;
  if(LIVE.sim){d=Math.min(LIVE.d,D.length-1);i=LIVE.i}
  else{const k=Math.floor((Date.now()-new Date((t.startDate||"")+"T00:00"))/864e5);
-  if(isNaN(k)||k<0){d=0;i=-1}else if(k>=D.length){d=D.length-1;i=D[d].items.length-1}
+  if(isNaN(k)||k<0){d=0;i=-1;off=true;before=true;left=isNaN(k)?0:-k}
+  else if(k>=D.length){d=D.length-1;i=D[d].items.length-1;off=true}
   else{d=k;const n=new Date(),cur=n.getHours()*60+n.getMinutes();i=-1;D[d].items.forEach((x,j)=>{if(isT(x.t)){const[h,m]=x.t.split(":");if(+h*60+ +m<=cur)i=j}})}}
- const its=D[d].items;return{D,d,i,day:D[d],now:its[i]||null,next:its[i+1]||null}}
+ const its=D[d].items;return{D,d,i,off,before,left,day:D[d],now:its[i]||null,next:its[i+1]||null}}
 const mins=x=>{const[h,m]=x.t.split(":");return+h*60+ +m};
-function liveHTML(t){const c=liveCalc(t);if(!c)return'<div class="lvh"><b>現在 / 下一步</b></div><p class="meta">新增每日行程後，這裡會顯示現在與下一步。</p>';
+function liveHTML(t){const c=liveCalc(t);if(!c)return'<div class="lvh"><span class="ldot"></span><b>現在 / 下一步</b></div><p class="meta">新增每日行程後，這裡會顯示現在與下一步。</p>';
+ if(c.off)return`<div class="lvh"><span class="ldot"></span><b>非行程時段</b></div><p class="meta">${c.before?(c.left?`距離出發還有 ${c.left} 天。`:"尚未設定出發日。"):"旅程已結束。"}旅行期間會依手機時間自動標示現在與下一步。</p><div class="lvctl"><button data-a="lvnext">預覽行程</button></div>`;
  const {now,next,day}=c,stay=now&&next&&isT(now.t)&&isT(next.t)&&mins(next)>mins(now)?mins(next)-mins(now):0,
  st=stay?`預估停留 ${stay>=60?Math.floor(stay/60)+" 小時 ":""}${stay%60?stay%60+" 分":""}`:"",
  dest=next?(next.lat!=null?`${next.lat},${next.lng}`:encodeURIComponent((next.q||next.h)+(t.country?" "+t.country:""))):"";
- return`<div class="lvh"><b>現在 / 下一步</b><span class="meta">${esc(day.k)}${day.date?" "+esc(day.date):""}${LIVE.sim?'<em class="simtag">模擬</em>':""}</span></div>
+ return`<div class="lvh"><span class="ldot ${LIVE.sim?"sim":"on"}"></span><b>${LIVE.sim?"預覽模式":"現在 / 下一步"}</b><span class="meta">${esc(day.k)}${day.date?" "+esc(day.date):""}</span></div>
  <div class="lvrow"><small>現在</small><b>${now?esc((now.t?now.t+"　":"")+now.h):"尚未開始"}</b></div>
  <div class="lvrow nx"><small>下一步</small><b>${next?esc((next.t?next.t+"　":"")+next.h):"今日行程已完成"}</b>${st?`<span class="lvst">${st}</span>`:""}</div>
  ${next?`<a class="pill lvnav" href="https://www.google.com/maps/dir/?api=1&destination=${dest}" target="_blank" rel="noopener"><i class="ic ic-nav"></i>導航至下一站</a>`:""}
@@ -410,7 +413,8 @@ function liveStep(a){const t=T0();if(!t)return;if(a==="lvauto"){LIVE={sim:false,
  const c=liveCalc(t);if(!c)return;let{d,i}=c;const D=c.D;
  if(a==="lvnext"){if(i<D[d].items.length-1)i++;else if(d<D.length-1){d++;i=-1}}else{if(i>-1)i--;else if(d>0){d--;i=D[d].items.length-1}}
  LIVE={sim:true,d,i};refreshLive()}
-/* ===== 每日行程 Accordion ===== */
-const daysAcc=(t,di)=>{const D=getDays(t);if(!D.length)return dayHTML(t,0);return D.map((d,i)=>`<section class="dayacc ${i===di?"open":""}" id="dacc-${i}"><button class="dayhd" data-a="accday" data-v="${i}" aria-expanded="${i===di}"><span class="dht"><b>${esc(d.k)}</b>${d.city?`<span>${esc(d.city)}</span>`:""}</span>${d.wx||d.tp?`<span class="wxchip">${esc(d.wx||"")} ${esc(d.tp||"")}</span>`:""}<i class="chev"></i></button><div class="daybody">${dayHTML(t,i)}</div></section>`).join("")};
-function focusDay(t,i){dayI[t.id]=i;document.querySelectorAll(".dayacc").forEach((x,n)=>{const o=n===i;x.classList.toggle("open",o);const h=x.querySelector(".dayhd");if(h)h.setAttribute("aria-expanded",o)});document.querySelectorAll("#dtabs button").forEach((x,n)=>x.classList.toggle("on",n===i));const el=document.getElementById("dacc-"+i);if(el)el.scrollIntoView({behavior:"smooth",block:"start"})}
-window.addEventListener("afterprint",()=>{const t=T0();if(t){const di=dayI[t.id]||0;document.querySelectorAll(".dayacc").forEach((x,n)=>x.classList.toggle("open",n===di))}});
+/* ===== 每日行程：純 Tab View（一次只顯示一天） ===== */
+const daysAcc=(t,di)=>dayHTML(t,di);
+function focusDay(t,i,go){dayI[t.id]=i;const b=$("#dayblk");if(b)b.innerHTML=dayHTML(t,i);document.querySelectorAll("#dtabs button").forEach((x,n)=>x.classList.toggle("on",n===i));if(go){const d=$("#dtabs");if(d)d.scrollIntoView({behavior:"smooth",block:"start"})}}
+window.addEventListener("afterprint",()=>{const t=T0(),b=$("#dayblk");if(t&&b)b.innerHTML=dayHTML(t,dayI[t.id]||0)});
+window.addEventListener("resize",()=>{try{MapView.refresh();MiniMap.refresh()}catch(e){}});
