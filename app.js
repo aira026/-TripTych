@@ -14,7 +14,9 @@ const ser=o=>{const r={...o};JF.forEach(k=>{if(r[k]!==undefined&&typeof r[k]!=="
 const tdoc=t=>doc(db,"trips",t.id);
 const statusOf=t=>{const u=(me&&me.uid)||(SNAP&&SNAP.uid);return(u&&t.st&&t.st[u])||"future"};
 const setSt=(t,s)=>updateDoc(tdoc(t),{["st."+me.uid]:s});
-function patch(t,p){if(!me){toast("離線檢視模式無法編輯，請連線並登入後再試");return Promise.resolve()}Object.assign(t,p);const o=TRIPS.find(x=>x.id===t.id);if(o)Object.assign(o,p);return updateDoc(tdoc(t),ser(p)).catch(e=>toast("儲存失敗："+(e.code||e.message)))}
+const wt=v=>Array.isArray(v)?v.length+v.reduce((n,x)=>n+wt(x&&x.items!==undefined?x.items:0),0):(v&&typeof v==="object"?Object.values(v).reduce((n,x)=>n+wt(x),0):0);
+function undoToast(fn){let u=document.getElementById("undo");if(!u){u=document.createElement("div");u.id="undo";document.body.appendChild(u)}u.innerHTML="<span>已刪除</span><button>復原</button>";u.classList.add("on");clearTimeout(u._t);u._t=setTimeout(()=>u.classList.remove("on"),6500);u.querySelector("button").onclick=()=>{u.classList.remove("on");fn()}}
+function patch(t,p){if(!me){toast("離線檢視模式無法編輯，請連線並登入後再試");return Promise.resolve()}const _old={};for(const k in p){if(wt(t[k])>wt(p[k]))_old[k]=JSON.parse(JSON.stringify(t[k]))}if(Object.keys(_old).length)setTimeout(()=>undoToast(()=>patch(t,_old)),0);Object.assign(t,p);const o=TRIPS.find(x=>x.id===t.id);if(o)Object.assign(o,p);return updateDoc(tdoc(t),ser(p)).catch(e=>toast("儲存失敗："+(e.code||e.message)))}
 const nameOf=(t,k)=>(t.memberNames&&t.memberNames[k])||k;
 const rnd=n=>Array.from(crypto.getRandomValues(new Uint8Array(n)),b=>"ABCDEFGHJKLMNPQRSTUVWXYZ23456789"[b%32]).join("");
 const $=s=>document.querySelector(s);
@@ -71,7 +73,7 @@ const saveMemo=(t,m)=>patch(t,{memo:m});
 const eb=(k,i)=>`<span class="ed mb"><button class="x" data-a="memoedit" data-v="${k}:${i}" aria-label="編輯"><i class=i-edit></i></button><button class="x" data-a="memodel" data-v="${k}:${i}" aria-label="刪除">✕</button></span>`;
 const stormHTML=t=>{const M=memoOf(t);return`<h2 class="sec">備案提醒</h2>${M.risks.map((r,i)=>`<div class="rw ${r.c?"crit":""}"><b>${esc(r.d)}</b><span>${esc(r.w)}</span><em>${esc(r.p)}</em>${eb("risks",i)}</div>`).join("")||'<p class="meta" style="margin:4px">還沒有備案。</p>'}<div class="pills ed"><button class="pill" data-a="memoadd" data-v="risks">＋ 新增備案</button></div>
 <h2 class="sec">緊急處理步驟</h2><ol class="cr">${M.steps.map((s,i)=>`<li><div><b>${esc(s.t)}</b><span>${esc(s.d)}</span></div>${eb("steps",i)}</li>`).join("")}</ol><div class="pills ed"><button class="pill" data-a="memoadd" data-v="steps">＋ 新增步驟</button></div><div class="pills"><a class="pill" href="tel:119">撥打 119</a></div>
-<h2 class="sec">個人備忘</h2><div class="glass blk"><div class="vw memo">${M.note?esc(M.note):'<span class="meta">（空白，按「編輯模式」可以寫）</span>'}</div><textarea class="fi ed" id="memo-note" rows="6" placeholder="想記的事…（備案、集合地點、提醒…）">${esc(M.note)}</textarea></div>`};
+<h2 class="sec">個人備忘</h2><p class="meta" style="margin:0 4px 6px">同一趟行程的成員在技術上讀得到，請勿記密碼等敏感資料。</p><div class="glass blk"><div class="vw memo">${M.note?esc(M.note):'<span class="meta">（空白，按「編輯模式」可以寫）</span>'}</div><textarea class="fi ed" id="memo-note" rows="6" placeholder="想記的事…（備案、集合地點、提醒…）">${esc(M.note)}</textarea></div>`};
 function memoForm(k,i){const t=T0(),M=memoOf(t),x=i!=null?M[k][i]:{};
  modal(k==="risks"?`<h3>${i!=null?"編輯":"新增"}備案</h3><div class="fm" data-k="risks" data-i="${i??""}"><label>天數／標題<input id="mm-a" value="${esc(x.d)}" placeholder="例如 D3"></label><label>可能的狀況<input id="mm-b" value="${esc(x.w)}"></label><label>備案對策<input id="mm-c" value="${esc(x.p)}"></label><label class="chk"><input type="checkbox" id="mm-x" ${x.c?"checked":""}> 標為重要（紅色）</label><div class="pills"><button class="pill" data-a="memosave">儲存</button></div></div>`
  :`<h3>${i!=null?"編輯":"新增"}步驟</h3><div class="fm" data-k="steps" data-i="${i??""}"><label>步驟標題<input id="mm-a" value="${esc(x.t)}"></label><label>說明<input id="mm-b" value="${esc(x.d)}"></label><div class="pills"><button class="pill" data-a="memosave">儲存</button></div></div>`)}
@@ -209,23 +211,23 @@ if(b.closest("#drawer")&&a&&a!=="menu")document.body.classList.remove("dr");
  if(a==="archive"&&t){if(confirm(`將「${t.title}」結束並歸檔到歷史旅程？`)){setSt(t,"past").then(()=>{go("past");toast("已歸檔")})}return}
  if(a==="setcur"){const n=visible().find(x=>x.id===v),o=visible().filter(x=>x.status==="now"&&x.id!==v);if(n&&confirm(`將「${n.title}」${n.status==="past"?"重新":""}設為當前行程？${o.length?"\n原本的當前旅程會自動歸檔到歷史旅程。":""}`)){Promise.all([...o.map(x=>setSt(x,"past")),setSt(n,"now")]).then(()=>{go("now");toast("已設為當前行程")})}return}
  if(a==="addbk"&&t){const i=$("#in-bk"),x=i.value.trim();if(!x)return;const L=bkList(t);L.push({n:x,c:"",u:""});saveBk(t,L);$("#t-tix").innerHTML=bar()+tixHTML(t);return}
- if(a==="delbk"&&t){if(!confirm("刪除這個項目？"))return;const L=bkList(t);L.splice(+v,1);saveBk(t,L);$("#t-tix").innerHTML=bar()+tixHTML(t);return}
+ if(a==="delbk"&&t){const L=bkList(t);L.splice(+v,1);saveBk(t,L);$("#t-tix").innerHTML=bar()+tixHTML(t);return}
  if(a==="cpi"){const c=document.querySelector(`[data-b="c"][data-i="${v}"]`).value;c?copy(c):toast("尚未填寫編號");return}
  if(a==="openu"){const u=document.querySelector(`[data-b="u"][data-i="${v}"]`).value.trim();okUrl(u)?window.open(u,"_blank","noopener"):toast("請先貼上 https:// 開頭的雲端連結");return}
 
  if(a==="addday"&&t){dayForm(null);return}
  if(a==="editday"&&t){dayForm(+v);return}
- if(a==="delday"&&t){if(!confirm("刪除這一天與底下所有行程？"))return;const D=getDays(t);D.splice(+v,1);D.forEach((d,j)=>{if(/^D\d+$/.test(d.k))d.k="D"+(j+1)});setDays(t,D);dayI[t.id]=Math.max(0,+v-1);refreshDays(t);return}
+ if(a==="delday"&&t){const D=getDays(t);D.splice(+v,1);D.forEach((d,j)=>{if(/^D\d+$/.test(d.k))d.k="D"+(j+1)});setDays(t,D);dayI[t.id]=Math.max(0,+v-1);refreshDays(t);return}
  if(a==="additem"&&t){itemForm(+v,null);return}
  if(a==="edititem"&&t){const[p,q]=v.split(":");itemForm(+p,+q);return}
- if(a==="delitem"&&t){if(!confirm("刪除這個項目？"))return;const[p,q]=v.split(":"),D=getDays(t);D[+p].items.splice(+q,1);setDays(t,D);refreshDays(t);return}
+ if(a==="delitem"&&t){const[p,q]=v.split(":"),D=getDays(t);D[+p].items.splice(+q,1);setDays(t,D);refreshDays(t);return}
  if(a==="saveitem"&&t){saveItem();return}
  if(a==="saveday"&&t){saveDay();return}
 
  if(a==="edtoggle"){setEdit(!document.body.classList.contains("editing"));return}
  if(a==="memoadd"&&t){memoForm(v,null);return}
  if(a==="memoedit"&&t){const[k,i]=v.split(":");memoForm(k,+i);return}
- if(a==="memodel"&&t){if(!confirm("刪除這一項？"))return;const[k,i]=v.split(":"),M=memoOf(t);M[k].splice(+i,1);saveMemo(t,M);$("#t-storm").innerHTML=bar()+stormHTML(t);return}
+ if(a==="memodel"&&t){const[k,i]=v.split(":"),M=memoOf(t);M[k].splice(+i,1);saveMemo(t,M);$("#t-storm").innerHTML=bar()+stormHTML(t);return}
  if(a==="memosave"&&t){const f=document.querySelector(".fm"),k=f.dataset.k,i=f.dataset.i===""?null:+f.dataset.i,M=memoOf(t),A=$("#mm-a").value.trim(),B=$("#mm-b").value.trim();if(!A&&!B)return toast("請填寫內容");
   const it=k==="risks"?{d:A,w:B,p:$("#mm-c").value.trim(),c:$("#mm-x").checked?1:0}:{t:A,d:B};if(i!=null)M[k][i]=it;else M[k].push(it);saveMemo(t,M);$("#modal").classList.remove("on");$("#t-storm").innerHTML=bar()+stormHTML(t);return}
  if(a==="members"&&t){membersModal(t);return}
@@ -251,6 +253,8 @@ if(b.closest("#drawer")&&a&&a!=="menu")document.body.classList.remove("dr");
  if(a==="sosadd"){$("#sosrows").insertAdjacentHTML("beforeend",sosRow(["","",""]));return}
  if(a==="sosdel"){b.closest(".sosr").remove();return}
  if(a==="savesos"&&t){const arr=[...document.querySelectorAll(".sosr")].map(r=>{const l=r.querySelector(".sosl").value.trim(),x=r.querySelector(".sosv").value.trim();return[l,x,/^\+?[\d\s\-()]{3,}$/.test(x)?"tel:"+x.replace(/[^\d+]/g,""):""]}).filter(r=>r[0]||r[1]);patch(t,{sos:arr}).then(()=>{modal(sosHTML(t));toast("已儲存")});return}
+ if(a==="export"){exportBackup();return}
+ if(a==="import"){const inp=document.createElement("input");inp.type="file";inp.accept="application/json,.json";inp.onchange=()=>importBackup(inp.files[0]);inp.click();return}
  if(a==="close")$("#modal").classList.remove("on");
  else if(a==="cp")copy(v);
  else if(a==="m"&&t)modal({book:bookHTML,diet:dietHTML,sos:sosHTML}[v](t));
@@ -267,7 +271,7 @@ $("#modal").addEventListener("click",e=>{if(e.target.id==="modal")$("#modal").cl
   if(u){let first=true;unsub=onSnapshot(query(collection(db,"trips"),where("members","array-contains",u.uid)),s=>{TRIPS=s.docs.map(d=>norm({id:d.id,...d.data()}));saveSnap(u);render();if(first){first=false;if(navigator.onLine)migrate()}},er=>console.error("[snapshot]",er))}
   else render()});
  render();setInterval(()=>{tick();refreshLive()},60000);
- if("serviceWorker" in navigator&&location.protocol.startsWith("http"))navigator.serviceWorker.register("sw.js").catch(()=>{})})();
+ if("serviceWorker" in navigator&&location.protocol.startsWith("http"))navigator.serviceWorker.register("sw.js").then(r=>{try{r.update()}catch(e){}}).catch(()=>{});(()=>{const had=!!navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener("controllerchange",()=>{if(had)showUpd()})})()})();
 
 document.addEventListener("input",e=>{if(e.target.id==="jpy"||e.target.id==="rate")calc()});
 document.addEventListener("change",e=>{const c=e.target.closest("input[data-k]"),t=T0();if(!c||!t)return;const P=plist(t);P[c.dataset.k][+c.dataset.i].d=c.checked?1:0;savePl(t,P);c.closest(".ck").classList.toggle("done",c.checked)});
@@ -281,8 +285,9 @@ function renderDrawer(){const t=T0(),nm=t?(t.short||t.title):"",b=(id,c)=>`<butt
 
 /* ---- auth / invite / template / migration ---- */
 const emptyNow0=()=>!FB_OK?`<div class="glass blk"><p>${FB_LOAD?"尚未設定 Firebase。請依說明填入 firebase-config.js 後重新整理。":"目前離線，且這台裝置還沒有行程快照。請連線並登入一次，之後就能離線查看。"}</p></div>`:me?'<div class="glass blk"><p>無當前行程，請新增行程或輸入邀請碼</p><div class="pills"><button class="pill" data-a="add" data-v="now"><span class="dot">＋</span>新增行程</button><button class="pill gl" data-a="join">輸入邀請碼</button><button class="pill gl" data-a="tpl">匯入範例：北海道</button></div></div>':'<div class="glass blk"><p>無當前行程，請登入後新增行程或輸入邀請碼</p><div class="pills"><button class="pill" data-a="auth">Google 一鍵登入</button></div></div>';
-const emptyNow=()=>emptyNow0()+(foodSnap()?'<div class="pills" style="margin-top:10px"><button class="pill gl" data-a="m" data-v="diet">飲食卡（離線快照）</button></div>':"");
-function drawerExtra(){const I=n=>`<i class="ic ic-${n}"></i>`,pr=`<button data-a="print">${I("print")}匯出行程懶人包 / PDF</button>`;
+const guide=()=>me&&!TRIPS.length?'<div class="glass blk guide"><b>快速開始</b><ol><li>新增行程，或向朋友索取邀請碼加入。</li><li>在行程裡新增每日景點，並填寫「地點」，地圖就會自動標出位置。</li><li>出發前在有網路時登入並載入一次，之後離線也能查看。</li></ol></div>':"";
+const emptyNow=()=>emptyNow0()+guide()+(foodSnap()?'<div class="pills" style="margin-top:10px"><button class="pill gl" data-a="m" data-v="diet">飲食卡（離線快照）</button></div>':"");
+function drawerExtra(){const I=n=>`<i class="ic ic-${n}"></i>`,pr=`<button data-a="print">${I("print")}匯出行程懶人包 / PDF</button><button data-a="export"><i class="ic ic-up"></i>匯出備份（JSON）</button><button data-a="import"><i class="ic ic-down"></i>匯入備份</button>`;
  return me?`<p class="grp">${I("user")}${esc(me.displayName||me.email||"我")}</p><button data-a="add" data-v="now">${I("plus")}新增行程</button><button data-a="join">${I("key")}輸入邀請碼</button><button data-a="tpl">${I("down")}匯入範例：北海道</button>${pr}<button data-a="auth">${I("out")}登出</button>`:`<p class="grp">帳戶</p><button class="login" data-a="auth">Google 一鍵登入</button>${pr}`}
 async function login(){const p=new GoogleAuthProvider();try{await signInWithPopup(auth,p)}catch(e){if(e.code==="auth/popup-blocked"||e.code==="auth/operation-not-supported-in-this-environment")signInWithRedirect(auth,p);else if(e.code!=="auth/popup-closed-by-user")toast("登入失敗："+e.code)}}
 async function ensureInvite(t){if(t.inviteCode)return t.inviteCode;for(let i=0;i<3;i++){const c=rnd(6);try{await setDoc(doc(db,"invites",c),{tripId:t.id,owner:me.uid});await updateDoc(tdoc(t),{inviteCode:c});t.inviteCode=c;return c}catch(e){}}return null}
@@ -418,3 +423,16 @@ const daysAcc=(t,di)=>dayHTML(t,di);
 function focusDay(t,i,go){dayI[t.id]=i;const b=$("#dayblk");if(b)b.innerHTML=dayHTML(t,i);document.querySelectorAll("#dtabs button").forEach((x,n)=>x.classList.toggle("on",n===i));if(go){const d=$("#dtabs");if(d)d.scrollIntoView({behavior:"smooth",block:"start"})}}
 window.addEventListener("afterprint",()=>{const t=T0(),b=$("#dayblk");if(t&&b)b.innerHTML=dayHTML(t,dayI[t.id]||0)});
 window.addEventListener("resize",()=>{try{MapView.refresh();MiniMap.refresh()}catch(e){}});
+
+/* ===== 備份：匯出 / 匯入 JSON ===== */
+function exportBackup(){if(!TRIPS.length)return toast("目前沒有可匯出的行程");const data={app:"TripTych",version:1,exported:new Date().toISOString(),trips:clean(TRIPS)};
+ const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,1)],{type:"application/json"}));a.download="triptych-backup-"+new Date().toISOString().slice(0,10)+".json";document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},800);toast("已匯出備份")}
+async function importBackup(f){if(!f)return;if(!me)return toast("請先登入再匯入");let d;try{d=JSON.parse(await f.text())}catch(e){return toast("檔案格式不正確")}
+ const L=Array.isArray(d)?d:d.trips;if(!Array.isArray(L)||!L.length)return toast("檔案裡沒有行程");
+ if(!confirm(`將匯入 ${L.length} 趟行程。會建立為新的行程，不會覆蓋現有資料。要繼續嗎？`))return;
+ const hasNow=visible().some(x=>x.status==="now");let ok=0;
+ for(const x of L){try{const {id,owner,members,memberNames,st,inviteCode,lastJoinCode,createdAt,status,...r}=x;let s0=(st&&Object.values(st)[0])||status||"past";if(s0==="now"&&hasNow)s0="past";
+  await setDoc(doc(collection(db,"trips")),{...ser({...r,owner:me.uid,members:[me.uid],memberNames:{[me.uid]:me.displayName||"我"},st:{[me.uid]:s0},importedFrom:id||""}),createdAt:serverTimestamp()});ok++}catch(e){console.error("[import]",e)}}
+ toast(`已匯入 ${ok}/${L.length} 趟行程`);if(ok)go("now")}
+/* ===== 新版本提示 ===== */
+function showUpd(){let b=document.getElementById("updbar");if(!b){b=document.createElement("button");b.id="updbar";b.textContent="有新版本，點此更新";b.onclick=()=>location.reload();document.body.appendChild(b)}b.classList.add("on")}

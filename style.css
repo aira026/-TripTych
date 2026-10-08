@@ -243,3 +243,28 @@ body.ro .topact{display:none!important}
  #nowmap{height:90mm!important}.mapw{max-height:110mm}
  a{color:#000;text-decoration:none}
 }
+
+/* ===== 現在 / 下一步：奶油暖白卡片 ===== */
+.aurora{background:linear-gradient(180deg,#FAF6EF,#f3e2cb)}
+.glass.live,.live{background:#FAF6EF;border:1px solid rgba(255,255,255,.9);border-left:1px solid rgba(255,255,255,.9);box-shadow:0 20px 40px rgba(90,50,10,.06)}
+.lvh{display:flex;align-items:center;gap:8px}.lvh .meta{margin-left:auto}
+.ldot{flex:0 0 10px;width:10px;height:10px;border-radius:50%;background:#cfc7bb}
+.ldot.on{background:#FF7A00;box-shadow:0 0 0 4px rgba(255,122,0,.16);animation:ldp 2.4s ease-out infinite}
+.ldot.sim{background:#FF7A00;opacity:.55}
+@keyframes ldp{0%{box-shadow:0 0 0 0 rgba(255,122,0,.4)}100%{box-shadow:0 0 0 10px rgba(255,122,0,0)}}
+.lvrow b{font-weight:600}.lvst{color:#8a6a4a}
+.lvnav{display:inline-flex;width:auto;min-height:44px;margin:10px 0 6px;padding:0 18px;background:#fff;color:#111;border:1px solid rgba(17,17,17,.12);font-size:.9rem;font-weight:600}
+.lvnav .ic{margin-right:.45em;color:#FF7A00}
+.lvctl button{background:#fff;border:1px solid rgba(17,17,17,.08)}
+/* ===== iOS black-translucent 狀態列安全區 ===== */
+#offbar{padding-top:calc(7px + env(safe-area-inset-top))}
+
+.ic-up{--m:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12'/%3E%3C/svg%3E")}
+:root{--mut:#625950}
+.meta,.eyebrow,.crumb{color:#625950}
+#undo{position:fixed;left:50%;bottom:110px;transform:translate(-50%,20px);display:flex;align-items:center;gap:14px;padding:8px 8px 8px 18px;border-radius:50px;background:#111;color:#fff;font-size:.88rem;opacity:0;pointer-events:none;transition:.25s;z-index:4500}
+#undo.on{opacity:1;pointer-events:auto;transform:translate(-50%,0)}
+#undo button{min-height:36px;padding:0 16px;border:0;border-radius:50px;background:#FF7A00;color:#fff;font-weight:700;cursor:pointer}
+#updbar{position:fixed;left:50%;top:calc(10px + env(safe-area-inset-top));transform:translateX(-50%) translateY(-80px);min-height:40px;padding:0 20px;border:0;border-radius:50px;background:#111;color:#fff;font-weight:600;font-size:.85rem;z-index:5000;opacity:0;transition:.3s;cursor:pointer}
+#updbar.on{opacity:1;transform:translateX(-50%) translateY(0)}
+.guide ol{margin:8px 0 0 18px;line-height:1.8;font-size:.92rem}
