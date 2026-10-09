@@ -533,8 +533,7 @@
     }
    ],
    "expensesConfig": {
-    "currency": "JPY",
-    "lightSplitUrl": "https://liff.line.me/1655320992-Y8GowEpw/g/d8RFNPmMzgFVBHipaJtnpu"
+    "currency": "JPY"
    },
    "storm": {
     "links": [

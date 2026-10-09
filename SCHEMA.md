@@ -12,3 +12,9 @@ trips/{id}
   - phrasebook：多情境多語句庫（點餐、交通、緊急）
 
 LocalStorage 快照：`tp-food-<tripId>`（飲食卡文案三語快照）、`tp-food-last`（最近一次）
+
+## 公開範本 templates/{code}（任何人可用代碼讀取）
+- 內容：title, short, country, countryCode, cities, nDays, notes, spots, days[], pack, gift, storm, currency, image
+- 管理欄位：owner, ownerName, featured（只能在 Console 設為 true）, publishedAt
+- 不含：members / booking / expenses / diets / memos / sos
+- trips/{id}.publicCode 記錄該行程已發布的代碼；匯入的行程帶 importedFrom

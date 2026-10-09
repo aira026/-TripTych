@@ -271,3 +271,22 @@ body.ro .topact{display:none!important}
 
 .cklab{display:flex;align-items:center;gap:10px;flex:1;min-height:48px;cursor:pointer}.cklab span{flex:1}
 #undo{bottom:170px}
+
+.ic-spark{--m:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z'/%3E%3Cpath d='M19 16v4M17 18h4'/%3E%3C/svg%3E")}
+/* ===== 歡迎頁 ===== */
+.landing{position:fixed;inset:0;z-index:2800;overflow:auto;background:radial-gradient(circle at 50% 28%,#fffdf9,#FAF6EF 60%,#f3e9da);transition:opacity .6s,transform .6s}
+.landing.out{opacity:0;transform:scale(1.15);pointer-events:none}
+.landing #globe{position:absolute;left:0;top:0;width:100%;height:50vh;pointer-events:none}
+.lc{position:relative;z-index:1;max-width:520px;margin:0 auto;padding:calc(48vh + env(safe-area-inset-top)) 22px 70px;text-align:center}
+.lc h1{font-size:2.6rem;font-weight:300;color:#111;margin:2px 0 6px}.ltag{color:#625950;margin-bottom:22px}
+.lglow{display:inline-flex;align-items:center;justify-content:center;min-height:56px;padding:0 40px;border:0;border-radius:50px;background:#111;color:#fff;font-weight:600;font-size:1.05rem;cursor:pointer;animation:breathe 2.8s ease-in-out infinite}
+@keyframes breathe{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(255,122,0,.35),0 10px 30px rgba(0,0,0,.2)}50%{transform:scale(1.035);box-shadow:0 0 0 16px rgba(255,122,0,0),0 10px 44px rgba(255,122,0,.38)}}
+.lh{margin:32px 0 10px;font-size:.85rem;font-weight:600;letter-spacing:.1em;color:#625950}
+.lcard{display:flex;flex-direction:column;align-items:flex-start;gap:2px;width:100%;margin-bottom:8px;padding:14px 18px;border:1px solid rgba(255,255,255,.9);border-radius:22px;background:rgba(255,255,255,.7);color:#111;font:inherit;text-align:left;cursor:pointer}
+.lcard span{color:#625950;font-size:.82rem}.lcode{margin-top:14px}
+.landing.warping #globe,.landing.warping .lc{transition:transform 1.4s cubic-bezier(.6,0,1,.4);transform:scale(1.9)}
+#warp{position:fixed;inset:0;width:100%;height:100%;z-index:5500;pointer-events:none;opacity:0;transition:opacity .45s}#warp.on{opacity:1}
+/* ===== 範本預覽 / AI ===== */
+.tpv{max-height:38vh;overflow:auto;margin:10px 0}.tpd{padding:8px 0;border-bottom:1px solid rgba(17,17,17,.07)}.tpd p{margin:2px 0 0;font-size:.84rem;color:#625950}
+
+body:not(.ready) main{visibility:hidden}

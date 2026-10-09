@@ -31,6 +31,20 @@ service cloud.firestore {
       allow delete: if request.auth != null && request.auth.uid == resource.data.owner;
     }
 
+    // 公開範本：任何人可用代碼讀取；只有發布者能改／刪；精選(featured)只能由管理者在 Console 設定
+    match /templates/{code} {
+      allow get: if true;
+      allow list: if resource.data.featured == true;
+      allow create: if request.auth != null
+        && request.resource.data.owner == request.auth.uid
+        && request.resource.data.featured == false;
+      allow update: if request.auth != null
+        && request.auth.uid == resource.data.owner
+        && request.resource.data.owner == resource.data.owner
+        && request.resource.data.featured == resource.data.featured;
+      allow delete: if request.auth != null && request.auth.uid == resource.data.owner;
+    }
+
     match /invites/{code} {
       allow get: if request.auth != null;   // 知道代碼才讀得到，不能列出全部
       allow list: if false;
