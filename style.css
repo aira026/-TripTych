@@ -268,3 +268,6 @@ body.ro .topact{display:none!important}
 #updbar{position:fixed;left:50%;top:calc(10px + env(safe-area-inset-top));transform:translateX(-50%) translateY(-80px);min-height:40px;padding:0 20px;border:0;border-radius:50px;background:#111;color:#fff;font-weight:600;font-size:.85rem;z-index:5000;opacity:0;transition:.3s;cursor:pointer}
 #updbar.on{opacity:1;transform:translateX(-50%) translateY(0)}
 .guide ol{margin:8px 0 0 18px;line-height:1.8;font-size:.92rem}
+
+.cklab{display:flex;align-items:center;gap:10px;flex:1;min-height:48px;cursor:pointer}.cklab span{flex:1}
+#undo{bottom:170px}

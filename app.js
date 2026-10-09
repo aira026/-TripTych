@@ -16,7 +16,7 @@ const statusOf=t=>{const u=(me&&me.uid)||(SNAP&&SNAP.uid);return(u&&t.st&&t.st[u
 const setSt=(t,s)=>updateDoc(tdoc(t),{["st."+me.uid]:s});
 const wt=v=>Array.isArray(v)?v.length+v.reduce((n,x)=>n+wt(x&&x.items!==undefined?x.items:0),0):(v&&typeof v==="object"?Object.values(v).reduce((n,x)=>n+wt(x),0):0);
 function undoToast(fn){let u=document.getElementById("undo");if(!u){u=document.createElement("div");u.id="undo";document.body.appendChild(u)}u.innerHTML="<span>已刪除</span><button>復原</button>";u.classList.add("on");clearTimeout(u._t);u._t=setTimeout(()=>u.classList.remove("on"),6500);u.querySelector("button").onclick=()=>{u.classList.remove("on");fn()}}
-function patch(t,p){if(!me){toast("離線檢視模式無法編輯，請連線並登入後再試");return Promise.resolve()}const _old={};for(const k in p){if(wt(t[k])>wt(p[k]))_old[k]=JSON.parse(JSON.stringify(t[k]))}if(Object.keys(_old).length)setTimeout(()=>undoToast(()=>patch(t,_old)),0);Object.assign(t,p);const o=TRIPS.find(x=>x.id===t.id);if(o)Object.assign(o,p);return updateDoc(tdoc(t),ser(p)).catch(e=>toast("儲存失敗："+(e.code||e.message)))}
+function patch(t,p){if(!me){toast("離線檢視模式無法編輯，請連線並登入後再試");return Promise.resolve()}const _old={};for(const k in p){const base=(k==="lists"&&!t.lists)?plist(t):t[k];if(wt(base)>wt(p[k]))_old[k]=JSON.parse(JSON.stringify(base))}if(Object.keys(_old).length)setTimeout(()=>undoToast(()=>patch(t,_old).then(()=>render())),0);Object.assign(t,p);const o=TRIPS.find(x=>x.id===t.id);if(o)Object.assign(o,p);return updateDoc(tdoc(t),ser(p)).catch(e=>{console.error("[patch] 寫入失敗",e);const u=document.getElementById("undo");if(u)u.classList.remove("on");toast("儲存失敗："+(e.code||e.message))})}
 const nameOf=(t,k)=>(t.memberNames&&t.memberNames[k])||k;
 const rnd=n=>Array.from(crypto.getRandomValues(new Uint8Array(n)),b=>"ABCDEFGHJKLMNPQRSTUVWXYZ23456789"[b%32]).join("");
 const $=s=>document.querySelector(s);
@@ -86,7 +86,7 @@ function yenHTML(t){const c=cfg(t),r=rate(),L=exList(t);
  <h2 class="sec">記一筆</h2><div class="glass blk"><input class="fi" id="memo" placeholder="項目（例：午餐湯咖哩）"><select class="fi" id="payer" aria-label="付款人">${c.members.map(m=>`<option value="${esc(m)}" ${m===me?.uid?"selected":""}>付款人：${esc(nameOf(t,m))}</option>`).join("")}</select><div class="splits"><small class="meta">分攤對象</small>${c.members.map(m=>`<label class="chk"><input type="checkbox" class="sp" value="${esc(m)}" checked> ${esc(nameOf(t,m))}</label>`).join("")}</div>
  <div class="pills"><button class="pill" data-a="addex">＋ 記入帳本</button><button class="pill gl" data-a="tols">複製並到 LightSplit</button></div></div>
  <h2 class="sec">帳本與結算</h2><div class="glass blk">${acct(t,L,r)}</div>`}
-function packHTML(t){const P=plist(t),sec=(k,ti)=>`<h2 class="sec">${ti}</h2><div class="glass blk">${P[k].map((x,i)=>`<label class="ck ${x.d?"done":""}"><input type="checkbox" data-k="${k}" data-i="${i}" ${x.d?"checked":""}><span>${esc(x.t)}</span><button class="x ed" data-a="deli" data-k="${k}" data-i="${i}" aria-label="刪除">✕</button></label>`).join("")}<div class="add ed"><input class="fi" id="in-${k}" placeholder="新增項目…"><button class="pill" data-a="addi" data-v="${k}">＋</button></div></div>`;
+function packHTML(t){const P=plist(t),sec=(k,ti)=>`<h2 class="sec">${ti}</h2><div class="glass blk">${P[k].map((x,i)=>`<div class="ck ${x.d?"done":""}"><label class="cklab"><input type="checkbox" data-k="${k}" data-i="${i}" ${x.d?"checked":""}><span>${esc(x.t)}</span></label><button class="x ed" data-a="deli" data-k="${k}" data-i="${i}" aria-label="刪除">✕</button></div>`).join("")}<div class="add ed"><input class="fi" id="in-${k}" placeholder="新增項目…"><button class="pill" data-a="addi" data-v="${k}">＋</button></div></div>`;
  return sec("pack","冬季裝備")+sec("gift","伴手禮／想買")}
 function calc(){const v=parseFloat($("#jpy")?.value)||0,r=parseFloat($("#rate")?.value)||0;if(!$("#twd"))return;if(r)store("tp-rate-"+curOf(),r);$("#twd").textContent="NT$ "+Math.round(v*r).toLocaleString();
  $("#qk").innerHTML=[1000,5000,10000,20000].map(x=>`<button data-a="q" data-v="${x}"><small>${x.toLocaleString()}</small>NT$${Math.round(x*r).toLocaleString()}</button>`).join("")}
@@ -205,7 +205,7 @@ if(b.closest("#drawer")&&a&&a!=="menu")document.body.classList.remove("dr");
  if(a==="delex"&&t){const L=exList(t);L.splice(+v,1);saveEx(t,L);$("#t-yen").innerHTML=bar()+yenHTML(t);calc();return}
  if(a==="tols"&&t){const y=parseFloat($("#jpy").value)||0;if(!y)return toast("請先輸入金額");copy(`${$("#memo").value.trim()||"花費"} ${curOf()} ${y.toLocaleString()} ≈ NT$${Math.round(y*rate()).toLocaleString()}（匯率${rate()}）付款：${$("#payer").selectedOptions[0].text.replace("付款人：","")}`);if(cfg(t).lightSplitUrl)window.open(cfg(t).lightSplitUrl,"_blank");return}
  if(a==="addi"&&t){const i=$("#in-"+v),x=i.value.trim();if(!x)return;const P=plist(t);P[v].push({t:x,d:0});savePl(t,P);$("#t-pack").innerHTML=bar()+packHTML(t);return}
- if(a==="deli"&&t){e.preventDefault();const P=plist(t);P[b.dataset.k].splice(+b.dataset.i,1);savePl(t,P);$("#t-pack").innerHTML=bar()+packHTML(t);return}
+ if(a==="deli"&&t){e.preventDefault();const P=plist(t);if(!P[b.dataset.k]||!P[b.dataset.k][+b.dataset.i])return;P[b.dataset.k].splice(+b.dataset.i,1);savePl(t,P);$("#t-pack").innerHTML=bar()+packHTML(t);return}
 
  if(a==="home"){e.preventDefault();go("now");return}
  if(a==="archive"&&t){if(confirm(`將「${t.title}」結束並歸檔到歷史旅程？`)){setSt(t,"past").then(()=>{go("past");toast("已歸檔")})}return}
@@ -271,7 +271,7 @@ $("#modal").addEventListener("click",e=>{if(e.target.id==="modal")$("#modal").cl
   if(u){let first=true;unsub=onSnapshot(query(collection(db,"trips"),where("members","array-contains",u.uid)),s=>{TRIPS=s.docs.map(d=>norm({id:d.id,...d.data()}));saveSnap(u);render();if(first){first=false;if(navigator.onLine)migrate()}},er=>console.error("[snapshot]",er))}
   else render()});
  render();setInterval(()=>{tick();refreshLive()},60000);
- if("serviceWorker" in navigator&&location.protocol.startsWith("http"))navigator.serviceWorker.register("sw.js").then(r=>{try{r.update()}catch(e){}}).catch(()=>{});(()=>{const had=!!navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener("controllerchange",()=>{if(had)showUpd()})})()})();
+ if("serviceWorker" in navigator&&location.protocol.startsWith("http"))navigator.serviceWorker.register("sw.js").then(r=>{try{r.update()}catch(e){}}).catch(()=>{});(()=>{if(!navigator.serviceWorker)return;const had=!!navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener("controllerchange",()=>{if(had)showUpd()})})()})();
 
 document.addEventListener("input",e=>{if(e.target.id==="jpy"||e.target.id==="rate")calc()});
 document.addEventListener("change",e=>{const c=e.target.closest("input[data-k]"),t=T0();if(!c||!t)return;const P=plist(t);P[c.dataset.k][+c.dataset.i].d=c.checked?1:0;savePl(t,P);c.closest(".ck").classList.toggle("done",c.checked)});
