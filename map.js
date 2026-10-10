@@ -10,13 +10,13 @@ render(trips){this.layer.clearLayers();const all=[],col={past:"#8a8178",now:"#FF
  this.pts=all;if(all.length)this.map.fitBounds(all,{padding:[30,30],maxZoom:6})},
 refresh(){setTimeout(()=>{try{this.map.invalidateSize();if(this.pts&&this.pts.length)this.map.fitBounds(this.pts,{padding:[30,30],maxZoom:6})}catch(e){}},60)}};
 
-const MiniMap={m:null,ks:[],sel:null,ll:[],tok:0,
+const MiniMap={m:null,ks:[],sel:null,ll:[],tok:0,members:[],mk2:null,mlayer:null,
 icon(){return L.divIcon({className:"pdot-w",html:'<span class="pdot"><i></i><b></b></span>',iconSize:[26,26],iconAnchor:[13,13]})},
 mark(k,key){this.ks.forEach(x=>x._icon&&x._icon.classList.toggle("sel",x===k));this.sel=key},
-render(id,pts,mk){try{if(this.m)this.m.remove()}catch(e){}this.m=null;this.ks=[];this.sel=null;this.ll=[];const el=document.getElementById(id);if(!el)return;
+render(id,pts,mk){try{if(this.m)this.m.remove()}catch(e){}this.m=null;this.ks=[];this.sel=null;this.ll=[];this.mlayer=null;const el=document.getElementById(id);if(!el)return;
  this.m=L.map(id,{scrollWheelZoom:false}).setView([30,120],2);
  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"© OpenStreetMap",maxZoom:18}).addTo(this.m);
- if(!pts.length)return;const s=[...pts].sort((a,b)=>a.day-b.day),ll=s.map(p=>[p.lat,p.lng]);this.ll=ll;
+ this.drawMembers();if(!pts.length)return;const s=[...pts].sort((a,b)=>a.day-b.day),ll=s.map(p=>[p.lat,p.lng]);this.ll=ll;
  if(ll.length>1)L.polyline(ll,{color:'#FF7A00',weight:3.5,opacity:.85,dashArray:'6, 8'}).addTo(this.m);
  this.m.on("popupclose",()=>{this.sel=null;this.ks.forEach(x=>x._icon&&x._icon.classList.remove("sel"))});
  s.forEach(p=>{const key=p.lat+","+p.lng+"|"+p.title,k=L.marker([p.lat,p.lng],{icon:this.icon(),title:p.title,keyboard:true}).addTo(this.m);this.ks.push(k);
@@ -25,4 +25,9 @@ render(id,pts,mk){try{if(this.m)this.m.remove()}catch(e){}this.m=null;this.ks=[]
    if(this.m.getZoom()===14&&this.m.getCenter().distanceTo([p.lat,p.lng])<5)open();else{this.m.once("moveend",open);this.m.flyTo([p.lat,p.lng],14,{duration:.8})}})});
  this.m.fitBounds(ll,{padding:[30,30],maxZoom:12});this.refresh()},
 reset(){if(!this.m)return;this.tok++;this.m.closePopup();this.sel=null;this.ks.forEach(x=>x._icon&&x._icon.classList.remove("sel"));if(this.ll.length)this.m.flyToBounds(this.ll,{padding:[30,30],maxZoom:12,duration:.8})},
+setMembers(list,mk){this.members=list||[];if(mk)this.mk2=mk;this.drawMembers()},
+drawMembers(){if(!this.m)return;if(this.mlayer){try{this.mlayer.remove()}catch(e){}}this.mlayer=L.layerGroup().addTo(this.m);
+ this.members.forEach(p=>{const k=L.marker([p.lat,p.lng],{icon:L.divIcon({className:"mdot-w",html:'<span class="mdot"><i></i><b></b></span>',iconSize:[34,34],iconAnchor:[17,17]}),zIndexOffset:1000,title:p.name,keyboard:true}).addTo(this.mlayer);
+  k.bindTooltip(p.name,{permanent:true,direction:"bottom",offset:[0,14],className:"mname"});
+  k.on("click",e=>{L.DomEvent.stopPropagation(e);const c=this.mk2&&this.mk2(p);if(c)L.popup({offset:[0,-10],maxWidth:260,minWidth:200,autoPan:true,autoPanPadding:[20,20],closeOnClick:false}).setLatLng([p.lat,p.lng]).setContent(c).openOn(this.m)})})},
 refresh(){setTimeout(()=>{try{if(this.m){this.m.invalidateSize();if(!this.sel&&this.ll.length)this.m.fitBounds(this.ll,{padding:[30,30],maxZoom:12})}}catch(e){}},80)}};

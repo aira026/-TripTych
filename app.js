@@ -115,7 +115,7 @@ function nowCard(t){const D=getDays(t),hsp=t.hotspots&&t.mapImage,di=Math.min(da
  <div class="pills"><button class="pill lt" data-a="m" data-v="book">Booking</button><button class="pill lt" data-a="members">成員</button><button class="pill lt" data-a="goyen">帳本</button><button class="pill lt" data-a="m" data-v="diet">飲食卡</button><button class="pill lt" data-a="m" data-v="sos">緊急</button></div></article>
  <div id="live" class="glass blk live">${liveHTML(t)}</div>
  
- <h2 class="sec">實際地圖</h2><div class="glass mapbox"><div id="nowmap" class="nowmap" role="application" aria-label="當前行程地圖"></div></div><div class="mi" id="mi2">點擊地圖地標查看當天摘要</div><p class="meta" style="margin:6px 4px 0">新增景點時填寫「地點」，就會自動標在地圖上。</p>
+ <h2 class="sec">實際地圖</h2><div class="locbar" id="locbar">${locBarHTML(t)}</div><div class="glass mapbox"><div id="nowmap" class="nowmap" role="application" aria-label="當前行程地圖"></div></div><div class="mi" id="mi2">點擊地圖地標查看當天摘要</div><p class="meta" style="margin:6px 4px 0">新增景點時填寫「地點」，就會自動標在地圖上。</p>
  <h2 class="sec">每日行程</h2><div class="days" id="dtabs">${tabsHTML(t,di)}</div><div id="dayblk">${daysAcc(t,di)}</div>`}
 function ptsOf(t){const P=[];getDays(t).forEach((d,i)=>d.items.forEach(x=>{if(x.lat!=null)P.push({lat:x.lat,lng:x.lng,day:i,dayLabel:`${d.k} ${d.date||""}`.trim(),time:x.t||"",title:x.h,place:x.q||"",note:x.d||""})}));(t.spots||[]).forEach(s=>P.push({lat:s.lat,lng:s.lng,day:(s.day||1)-1,dayLabel:s.day?"D"+s.day:"",time:"",title:s.name,place:"",note:s.note||""}));return P}
 function refreshDays(t){const D=getDays(t),di=Math.min(dayI[t.id]??0,Math.max(0,D.length-1));dayI[t.id]=di;$("#dtabs").innerHTML=tabsHTML(t,di);$("#dayblk").innerHTML=daysAcc(t,di);MiniMap.render("nowmap",ptsOf(t),pickPt)}
@@ -177,7 +177,7 @@ function render(){const v=visible(),by=s=>v.filter(t=>t.status===s);zm=null;
  $("#stats").innerHTML=`<div class="glass stat"><b>${new Set(real.map(t=>t.countryCode||t.country)).size}</b><small>造訪國家</small></div><div class="glass stat"><b>${real.reduce((s,t)=>s+nd(t),0)}</b><small>總天數</small></div><div class="glass stat"><b>${real.length}</b><small>趟旅行</small></div>`;
  MapView.render(v);if(cur==="map")MapView.refresh();
  const emp='<p class="empty">還沒有旅程，點上方「＋ 新增旅程」開始記錄</p>';
- $("#l-past").innerHTML=by("past").map(tcard).join("")||emp;$("#l-future").innerHTML=by("future").map(tcard).join("")||emp;renderDrawer();updBar();updLanding();tick()}
+ $("#l-past").innerHTML=by("past").map(tcard).join("")||emp;$("#l-future").innerHTML=by("future").map(tcard).join("")||emp;renderDrawer();updBar();updLanding();tick();syncLoc()}
 function tick(){const el=$("#cd"),t=visible().find(x=>x.status==="now"&&!x.locked);if(!el||!t||!t.startDate)return;const now=new Date(),st=new Date(t.startDate+"T00:00");
  const al=t.alerts||[];if(now>=st&&!al.length){const dd=Math.floor((now-st)/864e5)+1;el.textContent=dd<=nd(t)?`旅程第 ${dd} 天`:"旅程結束 ✨";return}
  if(now<st){el.textContent=`出發倒數 ${Math.ceil((st-now)/864e5)} 天`;return}
@@ -447,11 +447,11 @@ let FEAT=[],stopGlobe=null,PEND=null,AIPLAN=null,REC=null;
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
 function landList(){const it=[{id:"builtin",title:TPL?TPL.title:"北海道冬日雪國雙人自由行",meta:`${(TPL&&TPL.country)||"日本"} · ${(TPL&&TPL.days&&TPL.days.length)||6} 天`},...FEAT.map(f=>({id:"T:"+f.id,title:f.title,meta:`${f.country||""} · ${(f.days&&f.days.length)||f.nDays||"?"} 天`}))];
  return it.map(i=>`<button class="lcard" data-a="tplprev" data-v="${esc(i.id)}"><b>${esc(i.title)}</b><span>${esc(i.meta)}</span></button>`).join("")}
-function landingHTML(){return`<canvas id="globe" aria-hidden="true"></canvas><div class="lc"><p class="eyebrow">TripTych</p><h1>【歷歷】</h1><p class="ltag">展開地圖，點亮旅程中的每一個細節與故事。</p>${FB_OK?'<button class="lglow" data-a="landlogin">Google 登入</button>':'<p class="meta">目前離線，連線後即可登入。</p>'}<p class="meta" style="margin-top:12px">登入後可建立行程、與親友共編，離線也能查看。</p><h3 class="lh">精選範本（免登入預覽）</h3><div id="lfl">${landList()}</div>${FB_OK?'<div class="add lcode"><input id="lt-code" class="fi" placeholder="有範本代碼？輸入後預覽" maxlength="8"><button class="pill gl" data-a="tplcode">預覽</button></div>':""}</div>`}
+function landingHTMLold(){return`<canvas id="globe" aria-hidden="true"></canvas><div class="lc"><p class="eyebrow">TripTych</p><h1>【歷歷】</h1><p class="ltag">展開地圖，點亮旅程中的每一個細節與故事。</p>${FB_OK?'<button class="lglow" data-a="landlogin">Google 登入</button>':'<p class="meta">目前離線，連線後即可登入。</p>'}<p class="meta" style="margin-top:12px">登入後可建立行程、與親友共編，離線也能查看。</p><h3 class="lh">精選範本（免登入預覽）</h3><div id="lfl">${landList()}</div>${FB_OK?'<div class="add lcode"><input id="lt-code" class="fi" placeholder="有範本代碼？輸入後預覽" maxlength="8"><button class="pill gl" data-a="tplcode">預覽</button></div>':""}</div>`}
 function updLanding(){const need=AUTHREADY&&!me;document.body.classList.toggle("ready",AUTHREADY);let el=document.getElementById("landing");
  if(need&&!el){el=document.createElement("div");el.id="landing";el.className="landing";el.innerHTML=landingHTML();document.body.appendChild(el);stopGlobe=startGlobe(el.querySelector("#globe"))}
  else if(!need&&el){el.classList.add("out");setTimeout(()=>{stopGlobe&&stopGlobe();stopGlobe=null;el.remove()},650)}}
-function startGlobe(cv){const ctx=cv.getContext("2d");if(!ctx)return()=>{};let W,H,R,raf,rot=0;const pts=[];
+function startGlobeOld(cv){const ctx=cv.getContext("2d");if(!ctx)return()=>{};let W,H,R,raf,rot=0;const pts=[];
  for(let la=-80;la<=80;la+=6){const n=Math.max(6,Math.round(64*Math.cos(la*Math.PI/180)));for(let i=0;i<n;i++)pts.push([la*Math.PI/180,i/n*Math.PI*2])}
  const size=()=>{const r=cv.getBoundingClientRect(),d=Math.min(window.devicePixelRatio||1,2);W=cv.width=Math.max(1,r.width*d);H=cv.height=Math.max(1,r.height*d);R=Math.min(W,H)*.36};size();
  const draw=()=>{ctx.clearRect(0,0,W,H);const cx=W/2,cy=H*.46;
@@ -484,7 +484,7 @@ async function importSrc(id){if(!me){PEND=id;try{localStorage.setItem("tp-pend",
 function runPending(){let id=PEND;try{id=id||localStorage.getItem("tp-pend")}catch(e){}if(id&&me){PEND=null;try{localStorage.removeItem("tp-pend")}catch(e){}importSrc(id)}}
 const TPL_KEEP=["title","short","country","countryCode","cities","nDays","notes","spots","pack","gift","storm","currency","image"];
 function tplPayload(t){const o={};TPL_KEEP.forEach(k=>{if(t[k]!==undefined)o[k]=t[k]});o.days=getDays(t).map(d=>({k:d.k,city:d.city||"",pos:d.pos||"",wx:d.wx||"",tp:d.tp||"",more:d.more||"",items:d.items.map(x=>({t:x.t||"",h:x.h||"",d:x.d||"",q:x.q||"",type:x.type||"",more:x.more||"",...(x.lat!=null?{lat:x.lat,lng:x.lng}:{}),...(x.diet?{diet:x.diet}:{})}))}));return o}
-async function publishTpl(t){if(!me)return null;if(!confirm("將公開這趟行程的標題、每日行程、景點與備註，任何人拿到代碼或連結都能預覽並匯入。\n\n不會公開：成員、Booking 號碼與連結、帳本、緊急聯絡、飲食設定、備忘錄。\n請確認行程備註裡沒有個人隱私。要發布嗎？"))return null;
+async function publishTpl(t){if(!me)return null;if(!await askPublish())return null;
  const p=ser(tplPayload(t));for(let i=0;i<3;i++){const code=t.publicCode||rnd(6),body={...p,owner:me.uid,ownerName:me.displayName||"",publishedAt:serverTimestamp()};if(!t.publicCode)body.featured=false;
   try{await setDoc(doc(db,"templates",code),body,{merge:true});if(t.publicCode!==code)await patch(t,{publicCode:code});toast("已發布公開範本");return code}catch(e){console.error("[publish]",e);if(t.publicCode){toast("發布失敗："+(e.code||e.message));return null}}}
  toast("發布失敗，請再試一次");return null}
@@ -494,12 +494,12 @@ function discoverHTML(){const t=T0(),feat=[{id:"builtin",title:TPL?TPL.title:"�
  <h4 class="meta" style="margin:14px 0 4px">輸入範本代碼</h4><div class="add"><input class="fi" id="lt-code" placeholder="例如 K7M2QX" maxlength="8"><button class="pill" data-a="tplcode">預覽</button></div>
  <h4 class="meta" style="margin:14px 0 4px">加入朋友的行程（邀請碼）</h4><div class="add"><input class="fi" id="f-code" placeholder="邀請碼" maxlength="8" style="text-transform:uppercase"><button class="pill" data-a="dojoin">加入</button></div>
  ${t?`<h4 class="meta" style="margin:14px 0 4px">分享我的行程</h4>${t.publicCode?`<div class="jp codebox"><span>${esc(t.publicCode)}</span><button class="pill" data-a="cpcode" data-v="${esc(t.publicCode)}">複製代碼</button></div><div class="pills"><button class="pill gl" data-a="cplink" data-v="${esc(t.publicCode)}">複製連結</button><button class="pill gl" data-a="publish">更新內容</button><button class="pill gl" data-a="unpublish">取消公開</button></div>`:`<p class="meta">把「${esc(t.title)}」發布成公開範本，朋友輸入代碼或開啟連結，就能匯入並自己修改。</p><div class="pills"><button class="pill" data-a="publish">發布為公開範本</button></div>`}`:""}`}
-const dataHTML=()=>`<h3>資料與備份</h3><div class="row"><span>匯出備份（JSON）<br><small class="meta">下載你所有的行程</small></span><button class="cb" data-a="export">匯出</button></div><div class="row"><span>匯入備份<br><small class="meta">建立為新行程，不覆蓋現有資料</small></span><button class="cb" data-a="import">匯入</button></div><div class="row"><span>匯出行程懶人包（PDF）<br><small class="meta">列印或另存為 PDF</small></span><button class="cb" data-a="print">列印</button></div>`;
+const dataHTMLold=()=>`<h3>資料與備份</h3><div class="row"><span>匯出備份（JSON）<br><small class="meta">下載你所有的行程</small></span><button class="cb" data-a="export">匯出</button></div><div class="row"><span>匯入備份<br><small class="meta">建立為新行程，不覆蓋現有資料</small></span><button class="cb" data-a="import">匯入</button></div><div class="row"><span>匯出行程懶人包（PDF）<br><small class="meta">列印或另存為 PDF</small></span><button class="cb" data-a="print">列印</button></div>`;
 
 /* ===== 6. AI 小精靈 ===== */
 const AI_SCHEMA='{"title":"行程標題","days":[{"city":"當天城市或主題","pos":"當天重點","items":[{"t":"09:00","h":"景點或活動名稱","d":"簡短說明","q":"可在地圖搜尋的地點全名"}]}]}';
-const aiPrompt=()=>`你是旅遊行程規劃師。請依下列需求，用繁體中文規劃行程，並「只輸出 JSON」（不要任何說明、不要 Markdown 程式碼框），格式如下：\n${AI_SCHEMA}\n規則：每天 3～8 個項目；t 用 24 小時制 HH:MM；q 填可在地圖搜尋的地點全名（含城市）；最多 14 天。\n需求：${($("#ai-q")&&$("#ai-q").value.trim())||"（請填寫需求）"}`;
-function aiHTML(){const t=T0();return`<h3>AI 小精靈</h3><p class="meta">描述需求，例如「幫我規劃北海道 5 天行程，不吃肉，喜歡溫泉與雪景」。</p><textarea class="fi" id="ai-q" rows="4" placeholder="想去哪裡？幾天？有什麼偏好？"></textarea>${SR?'<div class="pills"><button class="pill gl" data-a="aimic" id="ai-mic">語音輸入</button></div>':""}
+const aiPromptOld=()=>`你是旅遊行程規劃師。請依下列需求，用繁體中文規劃行程，並「只輸出 JSON」（不要任何說明、不要 Markdown 程式碼框），格式如下：\n${AI_SCHEMA}\n規則：每天 3～8 個項目；t 用 24 小時制 HH:MM；q 填可在地圖搜尋的地點全名（含城市）；最多 14 天。\n需求：${($("#ai-q")&&$("#ai-q").value.trim())||"（請填寫需求）"}`;
+function aiHTMLold(){const t=T0();return`<h3>AI 小精靈</h3><p class="meta">描述需求，例如「幫我規劃北海道 5 天行程，不吃肉，喜歡溫泉與雪景」。</p><textarea class="fi" id="ai-q" rows="4" placeholder="想去哪裡？幾天？有什麼偏好？"></textarea>${SR?'<div class="pills"><button class="pill gl" data-a="aimic" id="ai-mic">語音輸入</button></div>':""}
  <label class="fl">套用方式<select class="fi" id="ai-mode">${t?`<option value="append">附加到目前行程（${esc(t.short||t.title)}）</option><option value="replace">取代目前的每日行程</option>`:""}<option value="new">建立新行程</option></select></label>
  ${AI_URL?'<div class="pills"><button class="pill" data-a="aigen">生成行程</button></div>':'<p class="meta">尚未設定 AI 後端。可用「手動模式」：複製提示詞到任何 AI 聊天，再把回覆貼到下方。</p><div class="pills"><button class="pill" data-a="aicopy">複製提示詞</button></div>'}
  <h4 class="meta" style="margin:14px 0 4px">貼上 AI 回覆的 JSON</h4><textarea class="fi" id="ai-json" rows="4" placeholder="${esc(AI_SCHEMA)}"></textarea><div class="pills"><button class="pill gl" data-a="aipaste">解析並預覽</button></div><div id="ai-out"></div>`}
@@ -509,7 +509,7 @@ function cleanPlan(p){if(typeof p==="string"){const m=p.match(/\{[\s\S]*\}|\[[\s
  return days.length?{title:S(p.title,60),days}:null}
 function showPlan(p){AIPLAN=cleanPlan(p);const o=$("#ai-out");if(!AIPLAN){if(o)o.innerHTML='<p class="meta">看不出是有效的行程，請再試一次。</p>';return toast("無法解析行程")}
  o.innerHTML=`<div class="tpv">${AIPLAN.days.map((d,i)=>`<div class="tpd"><b>D${i+1}${d.city?" · "+esc(d.city):""}</b><p>${d.items.map(x=>esc((x.t?x.t+" ":"")+x.h)).join("　")}</p></div>`).join("")}</div><div class="pills"><button class="pill" data-a="aiapply">填入行程（${AIPLAN.days.length} 天）</button></div>`}
-async function aiGen(){const q=($("#ai-q").value||"").trim();if(!q)return toast("請先描述需求");if(!me)return toast("請先登入");const out=$("#ai-out");out.innerHTML='<p class="meta">AI 規劃中，約需 10–40 秒…</p>';const ac=new AbortController(),to=setTimeout(()=>ac.abort(),60000);
+async function aiGenOld(){const q=($("#ai-q").value||"").trim();if(!q)return toast("請先描述需求");if(!me)return toast("請先登入");const out=$("#ai-out");out.innerHTML='<p class="meta">AI 規劃中，約需 10–40 秒…</p>';const ac=new AbortController(),to=setTimeout(()=>ac.abort(),60000);
  try{const tok=await auth.currentUser.getIdToken(),r=await fetch(AI_URL,{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+tok},body:JSON.stringify({prompt:q}),signal:ac.signal}),j=await r.json();if(!r.ok)throw new Error(j.error||r.status);showPlan(j.plan||j)}
  catch(e){console.error("[ai]",e);out.innerHTML=`<p class="meta">生成失敗：${esc(e.message||e)}。可改用手動模式。</p>`}finally{clearTimeout(to)}}
 function aiMic(){if(!SR)return;const b=$("#ai-mic");if(REC){REC.stop();return}REC=new SR();REC.lang="zh-TW";REC.interimResults=false;
@@ -549,3 +549,109 @@ document.addEventListener("click",e=>{const b=e.target.closest("[data-a]");if(!b
 
 /* 登出／未登入時清掉這台裝置上的行程快照（含成員姓名），避免被別人看到。舊版本機遷移用的 tp-bk-/tp-ex- 等不動。 */
 function purgeLocal(){try{Object.keys(localStorage).filter(k=>/^(tp-snap|tp-food-|tp-days-snap-)/.test(k)).forEach(k=>localStorage.removeItem(k))}catch(e){}}
+
+/* ===================== v20 ===================== */
+/* ---- 2/3. 登入頁：寫實藍色地球（NASA/Natural Earth 公有資料生成的貼圖 + 大氣層光暈 + 雲層） ---- */
+function landingHTML(){return`<canvas id="globe" aria-hidden="true"></canvas><div class="lc"><p class="eyebrow">TripTych</p><h1>【歷歷】</h1><p class="ltag">展開地圖，點亮旅程中的每一個細節與故事。</p>${FB_OK?'<button class="lglow" data-a="landlogin">Google 登入</button>':'<p class="meta">目前離線，連線後即可登入。</p>'}</div>`}
+function startGlobe(cv){const ctx=cv.getContext("2d");if(!ctx)return()=>{};
+ const TW=1024,TH=512,still=!!(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches);
+ let W=0,H=0,R=0,D=0,raf=0,last=0,rot=1.7,alive=true,tex=null,cld=null,off=null,octx=null,img=null,lonU,vRow,lit,spc,rim,alp;
+ const size=()=>{const r=cv.getBoundingClientRect(),d=Math.min(window.devicePixelRatio||1,1.5);W=cv.width=Math.max(2,Math.round(r.width*d));H=cv.height=Math.max(2,Math.round(r.height*d));R=Math.max(40,Math.floor(Math.min(W*.44,H*.40)));build()};
+ function build(){D=2*R+2;off=document.createElement("canvas");off.width=D;off.height=D;octx=off.getContext("2d");if(!octx){img=null;return}img=octx.createImageData(D,D);
+  lonU=new Float32Array(D*D);vRow=new Int32Array(D*D).fill(-1);lit=new Float32Array(D*D);spc=new Float32Array(D*D);rim=new Float32Array(D*D);alp=new Uint8Array(D*D);
+  const tilt=.31,ct=Math.cos(tilt),st=Math.sin(tilt),L=[-.55,.45,.70],ln=Math.hypot(L[0],L[1],L[2]);L[0]/=ln;L[1]/=ln;L[2]/=ln;
+  const hv=[L[0],L[1],L[2]+1],hn=Math.hypot(hv[0],hv[1],hv[2]);hv[0]/=hn;hv[1]/=hn;hv[2]/=hn;
+  for(let y=0;y<D;y++)for(let x=0;x<D;x++){const i=y*D+x,nx=(x-R-1)/R,ny=(R+1-y)/R,r2=nx*nx+ny*ny,dist=Math.sqrt(r2);if(dist>1.01)continue;
+   const nz=Math.sqrt(Math.max(0,1-r2)),yy=ny*ct-nz*st,zz=ny*st+nz*ct,la=Math.asin(Math.max(-1,Math.min(1,yy))),lo=Math.atan2(nx,zz);
+   lonU[i]=lo/(2*Math.PI)+.5;vRow[i]=Math.min(TH-1,Math.max(0,((Math.PI/2-la)/Math.PI*TH)|0))*TW;
+   lit[i]=Math.min(1,Math.max(0,(nx*L[0]+ny*L[1]+nz*L[2])*1.25));spc[i]=Math.pow(Math.max(0,nx*hv[0]+ny*hv[1]+nz*hv[2]),140)*.55;rim[i]=Math.pow(1-nz,2.6);
+   alp[i]=Math.round(Math.max(0,Math.min(1,(1.005-dist)*R))*255)}}
+ function render(){const out=img.data,ou=rot/(2*Math.PI),oc=ou*1.12+.03,N=D*D;
+  for(let i=0;i<N;i++){const vr=vRow[i],o=i*4;if(vr<0||alp[i]===0){out[o+3]=0;continue}
+   const k=(vr+((((lonU[i]+ou)%1+1)%1)*TW|0))*4,r=tex[k],g=tex[k+1],b=tex[k+2],c=cld[(vr+((((lonU[i]+oc)%1+1)%1)*TW|0))*4]*.003059,d=lit[i],sh=.16+.84*d,nt=1-d;
+   let R_=r*sh+6*nt,G_=g*sh+12*nt,B_=b*sh+30*nt;const cw=255*(.22+.78*d);R_=R_*(1-c)+cw*c;G_=G_*(1-c)+cw*c;B_=B_*(1-c)+cw*c;
+   if(b>r*1.35&&b>g){const sp=spc[i]*(1-c)*255;R_+=sp;G_+=sp*.95;B_+=sp*.86}
+   const rm=rim[i]*(.35+.65*d)*1.2;R_+=70*rm;G_+=150*rm;B_+=255*rm;
+   out[o]=R_;out[o+1]=G_;out[o+2]=B_;out[o+3]=alp[i]}
+  octx.putImageData(img,0,0)}
+ function draw(){ctx.clearRect(0,0,W,H);const cx=W/2,cy=H*.45;
+  const g=ctx.createRadialGradient(cx,cy,R*.98,cx,cy,R*1.3);g.addColorStop(0,"rgba(120,190,255,.6)");g.addColorStop(.3,"rgba(80,150,255,.25)");g.addColorStop(1,"rgba(80,150,255,0)");ctx.fillStyle=g;ctx.beginPath();ctx.arc(cx,cy,R*1.3,0,6.2832);ctx.fill();
+  if(tex&&cld&&img){render();ctx.drawImage(off,Math.round(cx-R-1),Math.round(cy-R-1))}
+  else{const f=ctx.createRadialGradient(cx-R*.35,cy-R*.4,R*.1,cx,cy,R);f.addColorStop(0,"#5aa7e8");f.addColorStop(.6,"#1d5fa8");f.addColorStop(1,"#06285a");ctx.fillStyle=f;ctx.beginPath();ctx.arc(cx,cy,R,0,6.2832);ctx.fill()}}
+ function frame(t){if(!alive)return;raf=requestAnimationFrame(frame);if(t-last<33)return;const dt=Math.min(.1,(t-last)/1000||.033);last=t;if(!still)rot+=dt*.1;draw()}
+ const load=src=>new Promise(res=>{const im=new Image();im.onload=()=>{try{const c=document.createElement("canvas");c.width=TW;c.height=TH;const x=c.getContext("2d");x.drawImage(im,0,0,TW,TH);res(x.getImageData(0,0,TW,TH).data)}catch(e){res(null)}};im.onerror=()=>res(null);im.src=src});
+ Promise.all([load("earth.jpg"),load("earth-clouds.jpg")]).then(([a,b])=>{tex=a;cld=b}).catch(()=>{});
+ size();raf=requestAnimationFrame(frame);window.addEventListener("resize",size);
+ return()=>{alive=false;cancelAnimationFrame(raf);window.removeEventListener("resize",size)}}
+
+/* ---- 5. 資料與備份：匯入排第一 ---- */
+const dataHTML=()=>`<h3>資料與備份</h3><div class="row"><span>匯入備份（JSON）<br><small class="meta">建立為新行程，不覆蓋現有資料</small></span><button class="cb" data-a="import">匯入</button></div><div class="row"><span>匯出備份（JSON）<br><small class="meta">下載你所有的行程</small></span><button class="cb" data-a="export">匯出</button></div><div class="row"><span>匯出行程懶人包（PDF）<br><small class="meta">列印或另存為 PDF</small></span><button class="cb" data-a="print">列印</button></div>`;
+
+/* ---- 6. 發布提醒 ---- */
+let PUBRES=null;
+function askPublish(){return new Promise(res=>{PUBRES=res;modal('<h3>【發布為公開範本】</h3><p>發布後將公開：行程標題、每日行程、景點與備註。</p><p><b>不會公開</b>：成員名單、預訂資料 (Booking)、帳本、緊急聯絡、飲食設定與備忘錄。</p><p class="meta" style="margin-top:8px">請確認行程中無個人隱私資訊。確定要發布嗎？</p><div class="pills"><button class="pill" data-a="pubok">確定發布</button></div>')})}
+
+/* ---- 4. AI 小精靈 v2：Provider 架構（免費優先；日後要開放大眾，只需新增 provider） ----
+   流程固定：buildPrompt → provider.run → cleanPlan（驗證/淨化）→ 預覽 → aiApply。
+   provider.mode="auto" 為網頁內一鍵；"manual" 為複製提示詞／貼回。新增 provider 只要 push 進 AI_PROVIDERS。 */
+const AI_LIMITS={maxPrompt:800,cooldownMs:8000};let AI_LAST=0,AI_AUTO=null;
+const LM=window.LanguageModel||(window.ai&&window.ai.languageModel)||null;
+const AI_LINKS=[["ChatGPT",q=>"https://chatgpt.com/?q="+encodeURIComponent(q)],["Claude",q=>"https://claude.ai/new?q="+encodeURIComponent(q)],["Gemini",()=>"https://gemini.google.com/app"]];
+const AI_PROVIDERS=[
+ {id:"device",label:"裝置內建 AI・免費",mode:"auto",
+  async available(){try{if(!LM)return false;if(LM.availability)return(await LM.availability())!=="unavailable";if(LM.capabilities)return(await LM.capabilities()).available!=="no"}catch(e){}return false},
+  async run(prompt){let ses;try{ses=await LM.create()}catch(e){ses=await LM.create({expectedInputs:[{type:"text",languages:["en"]}],expectedOutputs:[{type:"text",languages:["en"]}]})}try{return await ses.prompt(prompt)}finally{ses.destroy&&ses.destroy()}}},
+ {id:"endpoint",label:"雲端 AI",mode:"auto",available:async()=>!!AI_URL,
+  async run(prompt){const ac=new AbortController(),to=setTimeout(()=>ac.abort(),60000);try{const tok=await auth.currentUser.getIdToken(),r=await fetch(AI_URL,{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+tok},body:JSON.stringify({prompt}),signal:ac.signal}),j=await r.json();if(!r.ok)throw new Error(j.error||r.status);return j.plan||j}finally{clearTimeout(to)}}},
+ {id:"manual",label:"手動模式（免費）",mode:"manual",available:async()=>true}];
+const buildPrompt=q=>{q=String(q||"").replace(/[\u0000-\u001f\u007f]/g," ").trim().slice(0,AI_LIMITS.maxPrompt);return`你是旅遊行程規劃師。請依下列需求，用繁體中文規劃行程，並「只輸出 JSON」（不要任何說明、不要 Markdown 程式碼框），格式如下：\n${AI_SCHEMA}\n規則：每天 3～8 個項目；t 用 24 小時制 HH:MM；q 填可在地圖搜尋的地點全名（含城市）；最多 14 天。\n需求：${q||"（請填寫需求）"}`};
+const aiPrompt=()=>buildPrompt(($("#ai-q")||{}).value);
+const aiManualHTML=()=>`<p class="meta">全程免費：① 複製提示詞並開啟 AI，② 把 AI 的回覆貼回來。</p><div class="pills">${AI_LINKS.map((l,i)=>`<button class="pill ${i?"gl":""}" data-a="aiopen" data-v="${i}">${i?"":"① 複製並開啟 "}${l[0]}</button>`).join("")}</div><div class="pills"><button class="pill" data-a="aipasteclip">② 貼上回覆並預覽</button></div><details style="margin-top:8px"><summary class="meta">手動貼上</summary><textarea class="fi" id="ai-json" rows="4" placeholder="貼上 AI 回覆的 JSON"></textarea><div class="pills"><button class="pill gl" data-a="aipaste">解析並預覽</button></div></details>`;
+function aiHTML(){const t=T0();return`<h3>AI 小精靈</h3><p class="meta">一句話描述需求，例如「幫我規劃北海道 5 天行程，不吃肉，喜歡溫泉與雪景」。</p><textarea class="fi" id="ai-q" rows="3" maxlength="${AI_LIMITS.maxPrompt}" placeholder="想去哪裡？幾天？有什麼偏好？"></textarea>${SR?'<div class="pills"><button class="pill gl" data-a="aimic" id="ai-mic">語音輸入</button></div>':""}
+ <label class="fl">套用方式<select class="fi" id="ai-mode">${t?`<option value="append">附加到目前行程（${esc(t.short||t.title)}）</option><option value="replace">取代目前的每日行程</option>`:""}<option value="new">建立新行程</option></select></label><div id="ai-act"><p class="meta">檢查可用的 AI…</p></div><div id="ai-out"></div>`}
+async function aiInit(){const el=$("#ai-act");if(!el)return;let auto=null;for(const p of AI_PROVIDERS){if(p.mode==="auto"){let ok=false;try{ok=await p.available()}catch(e){}if(ok){auto=p;break}}}
+ AI_AUTO=auto;if($("#ai-act"))$("#ai-act").innerHTML=auto?`<div class="pills"><button class="pill" data-a="aiauto">一鍵生成（${esc(auto.label)}）</button></div><details style="margin-top:8px"><summary class="meta">改用手動模式</summary>${aiManualHTML()}</details>`:aiManualHTML()}
+async function aiAuto(){const q=(($("#ai-q")||{}).value||"").trim();if(!q)return toast("請先描述需求");if(!AI_AUTO)return;if(Date.now()-AI_LAST<AI_LIMITS.cooldownMs)return toast("請稍等幾秒再試");AI_LAST=Date.now();
+ const out=$("#ai-out"),p=AI_AUTO;out.innerHTML=`<p class="meta">${esc(p.label)} 規劃中，請稍候…</p>`;
+ try{showPlan(await p.run(buildPrompt(q)))}catch(e){console.error("[ai]",p.id,e);out.innerHTML=`<p class="meta">生成失敗：${esc(e.message||e)}。可展開「改用手動模式」。</p>`}}
+function aiGen(){return aiAuto()}
+
+/* ---- 1. 團隊成員實時定位（螢光綠） ----
+   trips/{id}/live/{uid} = {lat,lng,acc,ts,name}；只有行程成員讀得到、只能寫自己的。僅在 App 開啟時更新。 */
+let LOCSUB=null,LOCTRIP=null,LOCS={},LOCWATCH=null,LOCLAST={t:0,lat:0,lng:0};
+const LOCMAX=12*3600e3,locKey=id=>"tp-loc-"+id,isIOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+const locOn=id=>{try{const v=+localStorage.getItem(locKey(id));return v&&Date.now()-v<LOCMAX}catch(e){return false}};
+function locBarHTML(t){const on=locOn(t.id),n=Object.keys(LOCS).length;return`<span class="meta">${on?"正在向行程成員分享你的位置":"位置分享：關閉"}${n?`・地圖上 ${n} 人在線`:""}</span><button class="pill mini2 ${on?"":"gl"}" data-a="locshare">${on?"停止分享":"分享我的位置"}</button>`}
+function updLocBar(){const t=T0(),el=document.getElementById("locbar");if(el&&t)el.innerHTML=locBarHTML(t)}
+const locDoc=(tid,uid)=>doc(db,"trips",tid,"live",uid);
+function startShare(t){if(!me||!navigator.geolocation)return toast("這個瀏覽器無法取得定位");if(LOCWATCH!=null)return;
+ try{localStorage.setItem(locKey(t.id),String(Date.now()))}catch(e){}
+ LOCWATCH=navigator.geolocation.watchPosition(p=>{const c=p.coords,now=Date.now(),mv=Math.hypot((c.latitude-LOCLAST.lat)*111e3,(c.longitude-LOCLAST.lng)*111e3*Math.cos(c.latitude*Math.PI/180));
+  if(now-LOCLAST.t<20000&&mv<20)return;LOCLAST={t:now,lat:c.latitude,lng:c.longitude};
+  setDoc(locDoc(t.id,me.uid),{lat:c.latitude,lng:c.longitude,acc:Math.round(c.accuracy||0),ts:now,name:me.displayName||"成員"}).catch(e=>console.error("[loc]",e))},
+  err=>{console.warn("[loc]",err);toast(err.code===1?"沒有定位權限，請到瀏覽器設定允許":"暫時無法取得定位");stopShare(t,true)},{enableHighAccuracy:true,maximumAge:10000,timeout:25000});
+ updLocBar()}
+function stopShare(t,del){if(LOCWATCH!=null){try{navigator.geolocation.clearWatch(LOCWATCH)}catch(e){}LOCWATCH=null}try{localStorage.removeItem(locKey(t.id))}catch(e){}
+ if(del&&me&&db)deleteDoc(locDoc(t.id,me.uid)).catch(()=>{});updLocBar()}
+function syncLoc(){const t=T0();
+ if(!me||!t||!FB_OK){if(LOCSUB){LOCSUB();LOCSUB=null}LOCTRIP=null;LOCS={};if(LOCWATCH!=null){try{navigator.geolocation.clearWatch(LOCWATCH)}catch(e){}LOCWATCH=null}return}
+ if(LOCTRIP!==t.id){if(LOCSUB){LOCSUB();LOCSUB=null}LOCTRIP=t.id;LOCS={};if(LOCWATCH!=null){try{navigator.geolocation.clearWatch(LOCWATCH)}catch(e){}LOCWATCH=null}
+  LOCSUB=onSnapshot(collection(db,"trips",t.id,"live"),sn=>{LOCS={};sn.docs.forEach(d=>LOCS[d.id]=d.data());drawMembers();updLocBar()},er=>console.warn("[loc] 讀取失敗",er.code||er))}
+ if(locOn(t.id)&&LOCWATCH==null)startShare(t);else if(!locOn(t.id)&&LOCWATCH!=null)stopShare(t,true)}
+function drawMembers(){const t=T0();if(!t||typeof MiniMap==="undefined")return;const now=Date.now();
+ const list=Object.entries(LOCS).filter(([u,d])=>d&&typeof d.lat==="number"&&now-(d.ts||0)<3600e3).map(([u,d])=>({uid:u,name:u===(me&&me.uid)?"我":(nameOf(t,u)!==u?nameOf(t,u):d.name||"成員"),lat:d.lat,lng:d.lng,acc:d.acc||0,ts:d.ts||0,me:u===(me&&me.uid)}));
+ MiniMap.setMembers(list,memberPopup)}
+const navLinks=(lat,lng)=>{const g=`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=walking`,a=`https://maps.apple.com/?daddr=${lat},${lng}&dirflg=w`;return isIOS?[["Apple 地圖",a],["Google 地圖",g]]:[["Google 地圖",g],["Apple 地圖",a]]};
+function memberPopup(p){const el=document.createElement("div");el.className="pp";const min=Math.max(0,Math.round((Date.now()-p.ts)/60000)),nl=navLinks(p.lat,p.lng);
+ el.innerHTML=`<div class="mit"><b>${esc(p.name)}</b><span class="chip live">${p.me?"我的位置":"即時位置"}</span></div><p class="mis">${min<1?"剛剛更新":min+" 分鐘前更新"}${p.acc?`・精度約 ${p.acc} 公尺`:""}</p>${p.me?'<p class="meta">這是你目前分享的位置</p>':`<div class="pills"><a class="pill" href="${nl[0][1]}" target="_blank" rel="noopener">導航（${nl[0][0]}）</a></div><p class="meta" style="margin-top:6px"><a href="${nl[1][1]}" target="_blank" rel="noopener">改用 ${nl[1][0]}</a></p>`}`;return el}
+
+/* ---- v20 新增動作（獨立監聽） ---- */
+document.addEventListener("click",e=>{const b=e.target.closest("[data-a]");if(!b)return;const a=b.dataset.a,v=b.dataset.v;
+ switch(a){
+  case"pubok":if(PUBRES){const r=PUBRES;PUBRES=null;r(true)}break;
+  case"ai":setTimeout(aiInit,0);break;
+  case"aiauto":aiAuto();break;
+  case"aiopen":{const l=AI_LINKS[+v];if(!l)break;const q=aiPrompt();copy(q,"已複製提示詞，貼上送出即可");window.open(l[1](q),"_blank","noopener");break}
+  case"aipasteclip":{if(navigator.clipboard&&navigator.clipboard.readText){navigator.clipboard.readText().then(tx=>{if(!tx||!tx.trim())return toast("剪貼簿是空的，請先複製 AI 的回覆");const j=$("#ai-json");if(j)j.value=tx;showPlan(tx)}).catch(()=>{toast("無法讀取剪貼簿，請在「手動貼上」貼入");const d=document.querySelector("#ai-act details");if(d)d.open=true})}else{toast("請在「手動貼上」貼入回覆");const d=document.querySelector("#ai-act details");if(d)d.open=true}break}
+  case"locshare":{const t=T0();if(!t)break;if(!me)return toast("請先登入");if(locOn(t.id)){stopShare(t,true);toast("已停止分享位置")}else if(confirm("開啟後，你的即時位置會顯示給這趟行程的所有成員（需保持 App 開啟）。可隨時關閉。要開啟嗎？"))startShare(t);break}
+ }});

@@ -31,6 +31,15 @@ service cloud.firestore {
       allow delete: if request.auth != null && request.auth.uid == resource.data.owner;
     }
 
+    // 成員即時定位：只有行程成員讀得到；每人只能寫／刪自己的那一份
+    match /trips/{id}/live/{uid} {
+      allow read: if request.auth != null
+        && request.auth.uid in get(/databases/$(db)/documents/trips/$(id)).data.members;
+      allow create, update: if request.auth != null && request.auth.uid == uid
+        && request.auth.uid in get(/databases/$(db)/documents/trips/$(id)).data.members;
+      allow delete: if request.auth != null && request.auth.uid == uid;
+    }
+
     // 公開範本：任何人可用代碼讀取；只有發布者能改／刪；精選(featured)只能由管理者在 Console 設定
     match /templates/{code} {
       allow get: if true;

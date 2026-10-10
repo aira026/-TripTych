@@ -18,3 +18,11 @@ LocalStorage 快照：`tp-food-<tripId>`（飲食卡文案三語快照）、`tp-
 - 管理欄位：owner, ownerName, featured（只能在 Console 設為 true）, publishedAt
 - 不含：members / booking / expenses / diets / memos / sos
 - trips/{id}.publicCode 記錄該行程已發布的代碼；匯入的行程帶 importedFrom
+
+## 成員即時定位 trips/{id}/live/{uid}
+- 欄位：lat, lng, acc（公尺）, ts（毫秒時間戳）, name
+- 只有該行程成員可讀；每人只能寫／刪自己的文件；超過 60 分鐘的紀錄不顯示。
+
+## AI Provider 架構（app.js 的 AI_PROVIDERS）
+- `{id, label, mode:"auto"|"manual", available(), run(prompt)}`；新增一個 provider 只要 push 進陣列。
+- 固定流程：buildPrompt → provider.run → cleanPlan（驗證／淨化）→ 預覽 → aiApply。

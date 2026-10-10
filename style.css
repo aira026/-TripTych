@@ -290,3 +290,21 @@ body.ro .topact{display:none!important}
 .tpv{max-height:38vh;overflow:auto;margin:10px 0}.tpd{padding:8px 0;border-bottom:1px solid rgba(17,17,17,.07)}.tpd p{margin:2px 0 0;font-size:.84rem;color:#625950}
 
 body:not(.ready) main{visibility:hidden}
+
+/* ===== 登入頁（極簡） ===== */
+.landing{overflow:hidden}
+.landing #globe{height:58vh}
+.lc{padding:calc(56vh + env(safe-area-inset-top)) 22px 40px}
+.lc h1{margin-bottom:4px}.ltag{margin-bottom:26px}
+/* ===== 成員即時定位：螢光綠 ===== */
+.mdot-w{background:none;border:0}
+.mdot{position:relative;display:block;width:34px;height:34px}
+.mdot b,.mdot i{position:absolute;left:50%;top:50%;border-radius:50%}
+.mdot b{width:22px;height:22px;margin:-11px 0 0 -11px;background:#39FF14;border:3px solid #fff;box-shadow:0 0 0 5px rgba(57,255,20,.30),0 0 18px 6px rgba(57,255,20,.65)}
+.mdot i{width:22px;height:22px;margin:-11px 0 0 -11px;background:rgba(57,255,20,.5);animation:mdp 1.8s ease-out infinite}
+@keyframes mdp{0%{transform:scale(.8);opacity:.9}100%{transform:scale(3.2);opacity:0}}
+.leaflet-tooltip.mname{background:#111;color:#39FF14;border:0;border-radius:50px;padding:2px 10px;font-weight:700;font-size:.75rem;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.leaflet-tooltip-bottom.mname:before{display:none}
+.chip.live{background:#39FF14;color:#0b2b00}
+.locbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:0 2px 8px}
+.pill.mini2{min-height:36px;padding:0 16px;font-size:.82rem;white-space:nowrap}
