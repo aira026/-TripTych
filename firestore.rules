@@ -40,6 +40,15 @@ service cloud.firestore {
       allow delete: if request.auth != null && request.auth.uid == uid;
     }
 
+    // 【新增】找人請求
+    match /trips/{id}/locreq/{uid} {
+      allow read, delete: if request.auth != null && request.auth.uid == uid;
+      allow create, update: if request.auth != null
+        && request.resource.data.from == request.auth.uid
+        && request.auth.uid in get(/databases/$(db)/documents/trips/$(id)).data.members
+        && uid in get(/databases/$(db)/documents/trips/$(id)).data.members;
+    }
+
     // 公開範本：任何人可用代碼讀取；只有發布者能改／刪；精選(featured)只能由管理者在 Console 設定
     match /templates/{code} {
       allow get: if true;
