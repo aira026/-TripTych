@@ -1,12 +1,13 @@
-/* welcome.css — 歡迎頁 / 躍遷轉場（獨立檔案，載入於 style.css 之後；不會改動既有樣式） */
+/* welcome.css — 歡迎頁（v2：無地球，呼吸閃爍的登入按鈕） */
 :root{
   --tp-cream:#FAF6EF;
   --tp-ink:#2a2824;
   --tp-ink-2:#6f685d;
   --tp-navy:#1f3a5f;
+  --tp-gold:214,160,80;
 }
 
-/* 啟動 gate：auth 決定要顯示歡迎頁或 App 之前，先隱藏 App（用 visibility 以保留版面，Leaflet 才能量到尺寸） */
+/* 啟動 gate：auth 決定顯示歡迎頁或 App 前先隱藏 App（用 visibility 保留版面，Leaflet 才量得到尺寸） */
 html.tp-gate header.top,
 html.tp-gate main,
 html.tp-gate .drawer,
@@ -14,74 +15,59 @@ html.tp-gate .scrim,
 html.tp-gate .aurora{visibility:hidden}
 
 .welcome{
-  position:fixed;inset:0;z-index:1000;overflow:hidden;
-  color:var(--tp-ink);
-  background:radial-gradient(120% 80% at 50% 34%,#FFFCF6 0%,var(--tp-cream) 58%,#F2EADC 100%);
-  --globe-cy:38svh;
-  --globe-r:min(40vw,19svh);
+  position:fixed;inset:0;z-index:1000;overflow:hidden;color:var(--tp-ink);
+  background:radial-gradient(110% 70% at 50% 38%,#FFFCF6 0%,var(--tp-cream) 60%,#F2EADC 100%);
+  --ox:50%;--oy:72%;--R:150vmax;
+  clip-path:circle(var(--R) at var(--ox) var(--oy));
   opacity:0;transition:opacity .5s ease;
 }
 .welcome[hidden]{display:none}
 .welcome.on{opacity:1}
 .welcome.instant{transition:none}
-.welcome.revealing{opacity:0;transition:opacity .6s ease}
-
-/* WebGL 地球 */
-#earth-canvas{
-  position:absolute;inset:0;width:100%;height:100%;display:block;
-  opacity:0;transition:opacity 1.2s ease;
+/* 揭曉：背景光圈以按鈕為圓心收合，露出底下的 App */
+.welcome.revealing{
+  clip-path:circle(0px at var(--ox) var(--oy));
+  transition:clip-path .85s cubic-bezier(.65,0,.35,1);
 }
-.welcome.gl #earth-canvas{opacity:1}
 
-/* 地面柔影：讓地球「坐」在奶油色背景上，而不是漂浮發光 */
-.welcome::before{
-  content:"";position:absolute;left:50%;
-  top:calc(var(--globe-cy) + var(--globe-r) * 1.06);
-  width:calc(var(--globe-r) * 1.7);height:calc(var(--globe-r) * .18);
-  transform:translateX(-50%);
-  background:radial-gradient(closest-side,rgba(70,52,24,.17),rgba(70,52,24,0));
-  filter:blur(6px);pointer-events:none;
-}
-.welcome.arriving::before{opacity:0;transition:opacity .4s ease}
-
-/* 無 WebGL 時的靜態地球 */
-.welcome-fallback{
-  display:none;position:absolute;left:50%;top:var(--globe-cy);
-  width:calc(var(--globe-r) * 2);aspect-ratio:1;border-radius:50%;
-  transform:translate(-50%,-50%);
-  background:#1c3b66 url("earth.jpg") 0 50% / 200% 100% repeat-x;
-  box-shadow:inset -22px -16px 40px rgba(8,18,46,.55),inset 6px 4px 14px rgba(255,255,255,.14);
-  animation:tp-drift 240s linear infinite;
-}
-.welcome.nogl .welcome-fallback{display:block}
-@keyframes tp-drift{to{background-position:-200% 50%}}
-
-/* 品牌與按鈕 */
 .welcome-ui{
-  position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
-  padding:calc(var(--globe-cy) + var(--globe-r) + 34px) 28px calc(env(safe-area-inset-bottom,0px) + 26px);
-  text-align:center;transition:opacity .45s ease,transform .45s ease;
+  position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:56px;padding:calc(env(safe-area-inset-top,0px) + 24px) 28px calc(env(safe-area-inset-bottom,0px) + 24px);
+  text-align:center;
 }
-.welcome.arriving .welcome-ui{opacity:0;transform:translateY(10px);pointer-events:none}
-.welcome-brand h2{
-  margin:0;font-size:34px;font-weight:600;letter-spacing:.06em;line-height:1.2;color:var(--tp-ink);
-}
-.welcome-brand .wm{display:block;margin-top:6px;font-size:15px;letter-spacing:.14em;color:var(--tp-ink-2)}
-.welcome-brand p{margin:14px auto 0;max-width:19em;font-size:15px;line-height:1.7;color:var(--tp-ink-2)}
+.welcome-brand h2{margin:0;font-size:40px;font-weight:600;letter-spacing:.08em;line-height:1.2}
+.welcome-brand .wm{display:block;margin-top:8px;font-size:15px;font-weight:400;letter-spacing:.16em;color:var(--tp-ink-2)}
+.welcome-brand p{margin:20px auto 0;max-width:18em;font-size:15px;line-height:1.8;color:var(--tp-ink-2)}
 
-.welcome-actions{margin-top:auto;width:100%;display:flex;flex-direction:column;align-items:center;gap:8px}
+.welcome-actions{width:100%;display:flex;flex-direction:column;align-items:center;gap:10px}
+
+/* 呼吸 + 閃爍的登入按鈕 */
 .gbtn{
+  position:relative;overflow:hidden;isolation:isolate;
   display:flex;align-items:center;justify-content:center;gap:10px;
-  width:min(100%,340px);min-height:54px;padding:0 22px;border-radius:27px;
-  background:#fff;color:var(--tp-ink);font:600 16px/1 inherit;font-family:inherit;
-  border:1px solid rgba(60,45,20,.12);cursor:pointer;
-  box-shadow:0 6px 18px rgba(70,52,24,.10);
-  transition:transform .15s ease,box-shadow .15s ease,opacity .2s ease;
+  width:min(100%,320px);min-height:56px;padding:0 24px;border-radius:28px;
+  background:#fffdf9;color:var(--tp-ink);font-family:inherit;font-size:16px;font-weight:600;line-height:1;
+  border:1px solid rgba(var(--tp-gold),.35);cursor:pointer;
   -webkit-tap-highlight-color:transparent;
+  animation:tp-breathe 3.6s ease-in-out infinite;
 }
-.gbtn:active{transform:scale(.97);box-shadow:0 2px 8px rgba(70,52,24,.10)}
-.gbtn:focus-visible,.welcome .link:focus-visible{outline:2px solid var(--tp-navy);outline-offset:3px}
-.gbtn.is-pending{opacity:.85;cursor:progress}
+/* 掃光：每幾秒從左掃到右 */
+.gbtn::after{
+  content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
+  background:linear-gradient(105deg,transparent 38%,rgba(var(--tp-gold),.30) 50%,transparent 62%);
+  transform:translateX(-130%);
+  animation:tp-sheen 5s ease-in-out 1.2s infinite;
+}
+@keyframes tp-breathe{
+  0%,100%{transform:scale(1);box-shadow:0 6px 18px rgba(70,52,24,.10),0 0 0 0 rgba(var(--tp-gold),.0)}
+  50%{transform:scale(1.035);box-shadow:0 10px 26px rgba(70,52,24,.15),0 0 0 11px rgba(var(--tp-gold),.10)}
+}
+@keyframes tp-sheen{0%,55%{transform:translateX(-130%)}85%,100%{transform:translateX(130%)}}
+
+.gbtn:active{animation:none;transform:scale(.97);box-shadow:0 2px 8px rgba(70,52,24,.12)}
+.gbtn:focus-visible,.welcome .link:focus-visible{outline:2px solid var(--tp-navy);outline-offset:4px}
+.gbtn.is-pending,.welcome.arriving .gbtn{animation:none;cursor:progress}
+.gbtn.is-pending::after,.welcome.arriving .gbtn::after{animation:none;opacity:0}
 .gbtn .spin{
   display:none;width:18px;height:18px;border-radius:50%;
   border:2px solid rgba(31,58,95,.18);border-top-color:var(--tp-navy);animation:tp-spin .8s linear infinite;
@@ -90,40 +76,12 @@ html.tp-gate .aurora{visibility:hidden}
 .gbtn.is-pending .spin{display:block}
 @keyframes tp-spin{to{transform:rotate(360deg)}}
 
-.welcome-msg{min-height:20px;margin:0;font-size:13.5px;line-height:1.5;color:#9a4a3a}
+.welcome-msg{min-height:20px;max-width:22em;margin:0;font-size:13.5px;line-height:1.55;color:#9a4a3a}
 .welcome .link{
   background:none;border:0;padding:8px 12px;font:inherit;font-size:14px;
   color:var(--tp-ink-2);text-decoration:underline;text-underline-offset:3px;cursor:pointer;
 }
 .welcome .link[hidden]{display:none}
-
-/* 躍遷：速度線（單層 CSS，無粒子）+ 奶油色紗幕 */
-.warp-streaks{
-  position:absolute;inset:-30%;pointer-events:none;opacity:0;transform:scale(.55);
-  background:
-    repeating-conic-gradient(from 0deg at 50% 50%,transparent 0 2.1deg,rgba(255,252,244,.55) 2.3deg 2.5deg,transparent 2.7deg 5.3deg),
-    repeating-conic-gradient(from 1.3deg at 50% 50%,transparent 0 4.4deg,rgba(255,252,244,.35) 4.6deg 4.75deg,transparent 4.95deg 7.7deg);
-  -webkit-mask-image:radial-gradient(circle at 50% 50%,transparent 16%,#000 64%);
-          mask-image:radial-gradient(circle at 50% 50%,transparent 16%,#000 64%);
-  transition:opacity .45s ease,transform 1.3s cubic-bezier(.5,0,.9,.4);
-}
-.welcome.streaks .warp-streaks{opacity:.8;transform:scale(1.6)}
-
-.warp-veil{
-  position:absolute;inset:0;pointer-events:none;opacity:0;
-  background:radial-gradient(circle at 50% 50%,#FFFDF8 0%,var(--tp-cream) 72%);
-  transition:opacity .65s cubic-bezier(.4,0,.6,1);
-}
-.welcome.veiling .warp-veil{opacity:1}
-.welcome.veiling .warp-streaks{opacity:0;transition:opacity .5s ease}
-
-/* 等待地圖資料時的低調指示 */
-.warp-wait{
-  position:absolute;left:50%;top:50%;width:22px;height:22px;margin:-11px 0 0 -11px;border-radius:50%;
-  border:2px solid rgba(31,58,95,.15);border-top-color:var(--tp-navy);
-  opacity:0;pointer-events:none;transition:opacity .4s ease;animation:tp-spin .9s linear infinite;
-}
-.welcome.waiting:not(.revealing) .warp-wait{opacity:.8}
 
 /* 輕量提示 */
 .tp-notice{
@@ -134,12 +92,9 @@ html.tp-gate .aurora{visibility:hidden}
 }
 .tp-notice.on{opacity:1;transform:translate(-50%,0)}
 
-/* 減少動態：不做縮放與速度線，只保留淡入淡出 */
+/* 減少動態：停止呼吸與掃光，揭曉改為淡出 */
 @media (prefers-reduced-motion:reduce){
-  .welcome-fallback{animation:none}
-  .warp-streaks{display:none}
-  .gbtn{transition:none}
-  .welcome-ui{transition:opacity .25s ease;transform:none!important}
-  .warp-veil{transition:opacity .3s ease}
-  .welcome.revealing{transition:opacity .25s ease}
+  .gbtn,.gbtn::after{animation:none}
+  .gbtn::after{display:none}
+  .welcome.revealing{clip-path:circle(var(--R) at var(--ox) var(--oy));opacity:0;transition:opacity .25s ease}
 }
