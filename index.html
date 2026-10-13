@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#FAF6EF"><meta name="description" content="【歷歷】TripTych 旅行足跡與行程手冊">
+<link rel="manifest" href="manifest.webmanifest"><link rel="icon" type="image/png" href="icon-192.png"><link rel="apple-touch-icon" href="icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="歷歷"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<!-- LINE 與社群分享預覽設定 -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="【歷歷】TripTych - 你的隨身旅行助手">
+<meta property="og:description" content="展開地圖，點亮旅程中的每一個細節與故事。">
+<meta property="og:image" content="https://aira026.github.io/-TripTych/icon-512.png">
+<meta property="og:url" content="https://aira026.github.io/-TripTych/">
+<meta name="twitter:card" content="summary_large_image">
+<title>【歷歷】/ TripTych</title>
+<!-- 啟動 gate：auth.js 決定顯示歡迎頁或 App 前先隱藏 App；6 秒保險，避免腳本失敗時畫面卡住 -->
+<script>document.documentElement.classList.add("tp-gate");setTimeout(function(){document.documentElement.classList.remove("tp-gate")},6000)</script>
+<link rel="stylesheet" href="leaflet.css">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="welcome.css"></head>
+<body>
+<div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
+<header class="top">
+<button class="menu" data-a="menu" aria-label="開啟選單" aria-controls="drawer">☰</button>
+<div><a href="./" class="brand" data-a="home" aria-label="回到首頁"><span class="eyebrow">TripTych</span><h1>【歷歷】/ TripTych</h1></a><p class="crumb" id="crumb"></p></div><button class="who" id="who" data-a="auth" aria-label="登入／登出">登入</button>
+</header>
+<aside class="drawer" id="drawer" aria-label="目錄"></aside><div class="scrim" id="scrim" data-a="menu"></div>
+<main>
+<section id="t-now" class="panel on" aria-label="當前行程"></section>
+<section id="t-tix" class="panel" aria-label="票券與預約"></section>
+<section id="t-storm" class="panel" aria-label="備忘錄"></section>
+<section id="t-yen" class="panel" aria-label="匯率與帳本"></section>
+<section id="t-pack" class="panel" aria-label="打包清單"></section>
+<section id="t-map" class="panel" aria-label="全球足跡"><div class="stats" id="stats"></div><div class="glass mapbox"><div id="map" role="application" aria-label="足跡地圖"></div></div></section>
+<section id="t-past" class="panel" aria-label="歷史旅程"><div class="pills addrow"><button class="pill" data-a="add" data-v="past"><span class="dot">＋</span>新增旅程</button></div><div class="grid" id="l-past"></div></section>
+<section id="t-future" class="panel" aria-label="未來清單"><div class="pills addrow"><button class="pill" data-a="add" data-v="future"><span class="dot">＋</span>新增旅程</button></div><div class="grid" id="l-future"></div></section>
+</main>
+<div id="modal" class="modal"><div class="sheet glass" id="sheet"></div></div><div id="toast" class="toast"></div>
+
+<!-- 歡迎頁 -->
+<div id="welcome" class="welcome" role="dialog" aria-modal="true" aria-label="歡迎來到 TripTych" hidden>
+  <div class="welcome-ui">
+    <div class="welcome-brand">
+      <h2>【歷歷】<span class="wm">TripTych</span></h2>
+      <p>展開地圖，點亮旅程中的每一個細節與故事。</p>
+    </div>
+    <div class="welcome-actions">
+      <button id="btn-google" class="gbtn" type="button" aria-busy="false">
+        <svg class="gicon" viewBox="0 0 48 48" width="20" height="20" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+        <span class="spin" aria-hidden="true"></span>
+        <span class="lbl">使用 Google 登入</span>
+      </button>
+      <p id="welcome-msg" class="welcome-msg" role="status" aria-live="polite"></p>
+      <button id="btn-skip" class="link" type="button" hidden>稍後再說，先進入</button>
+    </div>
+  </div>
+</div>
+
+<script src="leaflet.js"></script>
+<script src="map.js"></script><script>addEventListener("error",function(e){if(window.__tp)return;var b=document.getElementById("t-now");if(b)b.innerHTML='<div class="glass blk"><p>⚠️ 程式載入失敗：'+String(e.message||"").replace(/</g,"&lt;")+'</p><p class="meta">常見原因：firebase-config.js 少了 export（請用 export const firebaseConfig = {…}）。</p></div>'});</script>
+<script type="module" src="auth.js"></script>
+<script type="module" src="app.js"></script>
+</body></html>

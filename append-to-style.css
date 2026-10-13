@@ -1,0 +1,61 @@
+/* ===== 貼到 style.css 最後面 ===== */
+:root{--tp-gold:214,160,80;--tp-ink:#2a2824;--tp-ink2:#6f685d;--tp-navy:#1f3a5f}
+
+/* ---- 登入頁 v2：無地球，呼吸閃爍的登入按鈕 ---- */
+.landing.v2{position:fixed!important;inset:0!important;z-index:900;display:flex!important;align-items:center;justify-content:center;padding:24px;overflow:hidden;
+  background:radial-gradient(110% 70% at 50% 38%,#FFFCF6 0%,#FAF6EF 60%,#F2EADC 100%);color:var(--tp-ink);
+  --ox:50%;--oy:70%;--R:150vmax;clip-path:circle(var(--R) at var(--ox) var(--oy))}
+.landing.v2 .lc{position:static;margin:0;padding:0;min-height:0;transform:none;width:min(100%,340px);display:flex;flex-direction:column;align-items:center;text-align:center}
+.landing.v2 h1{margin:0;font-size:40px;font-weight:600;letter-spacing:.08em;line-height:1.2}
+.landing.v2 h1 small{display:block;margin-top:8px;font-size:15px;font-weight:400;letter-spacing:.16em;color:var(--tp-ink2)}
+.landing.v2 .ltag{margin:20px auto 56px;max-width:18em;font-size:15px;line-height:1.8;color:var(--tp-ink2)}
+.lbtn{position:relative;overflow:hidden;isolation:isolate;display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:56px;padding:0 24px;border-radius:28px;
+  background:#fffdf9;color:var(--tp-ink);font:600 16px/1 inherit;font-family:inherit;border:1px solid rgba(var(--tp-gold),.35);cursor:pointer;-webkit-tap-highlight-color:transparent;
+  animation:tp-breathe 3.6s ease-in-out infinite}
+.lbtn::after{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(105deg,transparent 38%,rgba(var(--tp-gold),.30) 50%,transparent 62%);transform:translateX(-130%);animation:tp-sheen 5s ease-in-out 1.2s infinite}
+@keyframes tp-breathe{0%,100%{transform:scale(1);box-shadow:0 6px 18px rgba(70,52,24,.10),0 0 0 0 rgba(var(--tp-gold),0)}50%{transform:scale(1.035);box-shadow:0 10px 26px rgba(70,52,24,.15),0 0 0 11px rgba(var(--tp-gold),.10)}}
+@keyframes tp-sheen{0%,55%{transform:translateX(-130%)}85%,100%{transform:translateX(130%)}}
+.lbtn:active{animation:none;transform:scale(.97)}
+.lbtn:focus-visible{outline:2px solid var(--tp-navy);outline-offset:4px}
+.lbtn .spin,.ai-go .spin{display:none;width:18px;height:18px;border-radius:50%;border:2px solid rgba(31,58,95,.18);border-top-color:var(--tp-navy);animation:tp-spin .8s linear infinite}
+.lbtn.pending,.landing.v2.arriving .lbtn{animation:none;cursor:progress}
+.lbtn.pending::after,.landing.v2.arriving .lbtn::after{animation:none;opacity:0}
+.lbtn.pending .gic{display:none}.lbtn.pending .spin{display:block}
+@keyframes tp-spin{to{transform:rotate(360deg)}}
+/* 登入成功：背景光圈以按鈕為圓心收合，露出行程 */
+.landing.v2.iris{clip-path:circle(0px at var(--ox) var(--oy));transition:clip-path .85s cubic-bezier(.65,0,.35,1);pointer-events:none}
+.landing.v2.out{opacity:0;transition:opacity .35s ease;pointer-events:none}
+
+/* ---- AI 小精靈 ---- */
+.ai-h{display:flex;gap:12px;align-items:center;margin-bottom:12px}.ai-h h3{margin:0}.ai-h .meta{margin:2px 0 0}
+.ai-ic{flex:none;width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:rgba(var(--tp-gold),.16);color:#a8742a;font-size:20px}
+.ai-box{position:relative}.ai-box textarea{padding-right:46px;resize:none}
+.ai-mic{position:absolute;right:8px;top:8px;width:32px;height:32px;border-radius:50%;border:0;background:rgba(0,0,0,.05);font-size:16px;cursor:pointer}
+.ai-chips{display:flex;gap:8px;overflow-x:auto;padding:8px 0 2px;scrollbar-width:none}.ai-chips::-webkit-scrollbar{display:none}
+.ai-chip{flex:none;border:1px solid rgba(0,0,0,.1);background:rgba(255,255,255,.7);border-radius:999px;padding:6px 12px;font:inherit;font-size:.82rem;color:var(--tp-ink2);cursor:pointer}
+.ai-l{margin:12px 0 6px;font-size:.8rem;color:var(--tp-ink2)}
+.ai-seg{display:flex;gap:4px;padding:3px;border-radius:12px;background:rgba(0,0,0,.06)}
+.ai-seg button{flex:1;border:0;border-radius:9px;padding:8px 6px;background:none;font:inherit;font-size:.82rem;color:var(--tp-ink2);cursor:pointer}
+.ai-seg button.on{background:#fff;color:var(--tp-ink);box-shadow:0 1px 4px rgba(0,0,0,.12);font-weight:600}
+#ai-act{margin-top:14px}
+.ai-go{width:100%;min-height:48px;display:flex;align-items:center;justify-content:center;gap:8px;border-radius:24px}
+.ai-go.busy{opacity:.85;cursor:progress}.ai-go.busy .spin{display:block}
+.ai-by{margin:8px 0 0;text-align:center;font-size:.78rem;color:var(--tp-ink2)}
+.ai-man{margin-top:10px}.ai-man summary{font-size:.82rem;color:var(--tp-ink2);cursor:pointer}
+.ai-steps{margin:10px 0 0;padding-left:20px;display:grid;gap:12px}.ai-steps b{font-size:.9rem}
+.ai-sk{display:grid;gap:8px;margin-top:14px}.ai-sk i{height:44px;border-radius:12px;background:linear-gradient(90deg,rgba(0,0,0,.05),rgba(0,0,0,.11),rgba(0,0,0,.05));background-size:200% 100%;animation:ai-sh 1.2s linear infinite}
+@keyframes ai-sh{to{background-position:-200% 0}}
+.ai-err{margin-top:14px;padding:12px;border-radius:12px;background:rgba(190,70,50,.08);color:#9a4a3a;font-size:.88rem;line-height:1.5}
+.ai-res{margin-top:14px}.ai-sum{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:8px}.ai-sum span{font-size:.8rem;color:var(--tp-ink2)}
+.ai-day{border:1px solid rgba(0,0,0,.08);border-radius:12px;padding:0 12px;margin-bottom:6px;background:rgba(255,255,255,.55)}
+.ai-day summary{display:flex;gap:6px;align-items:baseline;padding:10px 0;cursor:pointer;list-style:none}.ai-day summary::-webkit-details-marker{display:none}
+.ai-day summary small{margin-left:auto;color:var(--tp-ink2)}
+.ai-day ul{margin:0 0 10px;padding:0;list-style:none;display:grid;gap:6px}.ai-day li{display:flex;gap:10px;font-size:.88rem}.ai-day time{flex:none;width:44px;color:var(--tp-ink2);font-variant-numeric:tabular-nums}
+
+/* ---- 找人 ---- */
+.pst{display:inline-block;padding:1px 8px;border-radius:999px;font-size:.72rem;font-weight:600;background:rgba(0,0,0,.07)}
+.pst.live{background:rgba(60,190,90,.18);color:#1d7a3a}.pst.checkin{background:rgba(var(--tp-gold),.2);color:#8a5a14}
+#reqbar{position:fixed;left:12px;right:12px;top:calc(env(safe-area-inset-top,0px) + 10px);z-index:1200;display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:16px;background:rgba(42,40,36,.95);color:#fff;font-size:.88rem}
+#reqbar span{flex:1}#reqbar button{border:0;border-radius:999px;padding:7px 12px;font:inherit;font-size:.82rem;font-weight:600;background:#fff;color:#2a2824;cursor:pointer}#reqbar button.gl{background:rgba(255,255,255,.18);color:#fff}
+
+@media (prefers-reduced-motion:reduce){.lbtn,.lbtn::after{animation:none}.lbtn::after{display:none}.ai-sk i{animation:none}}

@@ -1,0 +1,100 @@
+/* welcome.css — 歡迎頁（v2：無地球，呼吸閃爍的登入按鈕） */
+:root{
+  --tp-cream:#FAF6EF;
+  --tp-ink:#2a2824;
+  --tp-ink-2:#6f685d;
+  --tp-navy:#1f3a5f;
+  --tp-gold:214,160,80;
+}
+
+/* 啟動 gate：auth 決定顯示歡迎頁或 App 前先隱藏 App（用 visibility 保留版面，Leaflet 才量得到尺寸） */
+html.tp-gate header.top,
+html.tp-gate main,
+html.tp-gate .drawer,
+html.tp-gate .scrim,
+html.tp-gate .aurora{visibility:hidden}
+
+.welcome{
+  position:fixed;inset:0;z-index:1000;overflow:hidden;color:var(--tp-ink);
+  background:radial-gradient(110% 70% at 50% 38%,#FFFCF6 0%,var(--tp-cream) 60%,#F2EADC 100%);
+  --ox:50%;--oy:72%;--R:150vmax;
+  clip-path:circle(var(--R) at var(--ox) var(--oy));
+  opacity:0;transition:opacity .5s ease;
+}
+.welcome[hidden]{display:none}
+.welcome.on{opacity:1}
+.welcome.instant{transition:none}
+/* 揭曉：背景光圈以按鈕為圓心收合，露出底下的 App */
+.welcome.revealing{
+  clip-path:circle(0px at var(--ox) var(--oy));
+  transition:clip-path .85s cubic-bezier(.65,0,.35,1);
+}
+
+.welcome-ui{
+  position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:56px;padding:calc(env(safe-area-inset-top,0px) + 24px) 28px calc(env(safe-area-inset-bottom,0px) + 24px);
+  text-align:center;
+}
+.welcome-brand h2{margin:0;font-size:40px;font-weight:600;letter-spacing:.08em;line-height:1.2}
+.welcome-brand .wm{display:block;margin-top:8px;font-size:15px;font-weight:400;letter-spacing:.16em;color:var(--tp-ink-2)}
+.welcome-brand p{margin:20px auto 0;max-width:18em;font-size:15px;line-height:1.8;color:var(--tp-ink-2)}
+
+.welcome-actions{width:100%;display:flex;flex-direction:column;align-items:center;gap:10px}
+
+/* 呼吸 + 閃爍的登入按鈕 */
+.gbtn{
+  position:relative;overflow:hidden;isolation:isolate;
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  width:min(100%,320px);min-height:56px;padding:0 24px;border-radius:28px;
+  background:#fffdf9;color:var(--tp-ink);font-family:inherit;font-size:16px;font-weight:600;line-height:1;
+  border:1px solid rgba(var(--tp-gold),.35);cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+  animation:tp-breathe 3.6s ease-in-out infinite;
+}
+/* 掃光：每幾秒從左掃到右 */
+.gbtn::after{
+  content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
+  background:linear-gradient(105deg,transparent 38%,rgba(var(--tp-gold),.30) 50%,transparent 62%);
+  transform:translateX(-130%);
+  animation:tp-sheen 5s ease-in-out 1.2s infinite;
+}
+@keyframes tp-breathe{
+  0%,100%{transform:scale(1);box-shadow:0 6px 18px rgba(70,52,24,.10),0 0 0 0 rgba(var(--tp-gold),.0)}
+  50%{transform:scale(1.035);box-shadow:0 10px 26px rgba(70,52,24,.15),0 0 0 11px rgba(var(--tp-gold),.10)}
+}
+@keyframes tp-sheen{0%,55%{transform:translateX(-130%)}85%,100%{transform:translateX(130%)}}
+
+.gbtn:active{animation:none;transform:scale(.97);box-shadow:0 2px 8px rgba(70,52,24,.12)}
+.gbtn:focus-visible,.welcome .link:focus-visible{outline:2px solid var(--tp-navy);outline-offset:4px}
+.gbtn.is-pending,.welcome.arriving .gbtn{animation:none;cursor:progress}
+.gbtn.is-pending::after,.welcome.arriving .gbtn::after{animation:none;opacity:0}
+.gbtn .spin{
+  display:none;width:18px;height:18px;border-radius:50%;
+  border:2px solid rgba(31,58,95,.18);border-top-color:var(--tp-navy);animation:tp-spin .8s linear infinite;
+}
+.gbtn.is-pending .gicon{display:none}
+.gbtn.is-pending .spin{display:block}
+@keyframes tp-spin{to{transform:rotate(360deg)}}
+
+.welcome-msg{min-height:20px;max-width:22em;margin:0;font-size:13.5px;line-height:1.55;color:#9a4a3a}
+.welcome .link{
+  background:none;border:0;padding:8px 12px;font:inherit;font-size:14px;
+  color:var(--tp-ink-2);text-decoration:underline;text-underline-offset:3px;cursor:pointer;
+}
+.welcome .link[hidden]{display:none}
+
+/* 輕量提示 */
+.tp-notice{
+  position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 24px);z-index:1100;
+  transform:translate(-50%,12px);max-width:calc(100vw - 40px);padding:11px 16px;border-radius:14px;
+  background:rgba(42,40,36,.92);color:#fff;font-size:14px;line-height:1.5;
+  opacity:0;transition:opacity .3s ease,transform .3s ease;pointer-events:none;
+}
+.tp-notice.on{opacity:1;transform:translate(-50%,0)}
+
+/* 減少動態：停止呼吸與掃光，揭曉改為淡出 */
+@media (prefers-reduced-motion:reduce){
+  .gbtn,.gbtn::after{animation:none}
+  .gbtn::after{display:none}
+  .welcome.revealing{clip-path:circle(var(--R) at var(--ox) var(--oy));opacity:0;transition:opacity .25s ease}
+}
