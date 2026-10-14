@@ -1,5 +1,5 @@
 // TripTick Service Worker：同源檔案「網路優先 + 強制重新驗證」，離線時用快取；只攔截自家、gstatic（Firebase SDK）與地圖圖磚
-const C="hk-v17";
+const C="hk-v18";
 const PRE=["./","./index.html","./style.css","./welcome.css","./app.js","./map.js","./trips.json","./firebase-config.js","./manifest.webmanifest","./icon-180.png","./icon-192.png","./icon-512.png","./leaflet.js","./leaflet.css"];
 const CDN=["https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js","https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js","https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"];
 self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(async c=>{await Promise.all(PRE.map(u=>c.add(u).catch(()=>{})));await Promise.all(CDN.map(u=>c.add(new Request(u,{mode:"cors"})).catch(()=>{})))}));self.skipWaiting()});
