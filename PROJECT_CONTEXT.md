@@ -28,14 +28,14 @@ Plaintext
 ├── app.js                # 核心應用程式邏輯與狀態管理
 ├── auth.js               # Firebase 驗證邏輯與登入/登出控制
 ├── firebase-config.js    # Firebase 初始化與設定檔
-├── welcome.css           # 歡迎頁專屬樣式（已移除 3D 地球容器與殘留渲染）
+├── welcome.css           # 歡迎頁專屬樣式（極簡 iOS 風格，無任何 3D 地球殘留）
 └── assets/               # 靜態資源與圖示
 
 4. 已完成的核心功能與關鍵邏輯摘要
 Google Auth 登入防護：於 auth.js 中調整 GoogleAuthProvider 參數，強化帳號選擇機制，避免 Safari 瀏覽器快取強制綁定單一舊帳號。
 安全登出機制 (signOutUser)：清除對應的驗證標記與 Firebase Session，並安全地執行頁面重整，維持乾淨的驗證狀態同時保護全域設定。
-UI 減法工程：全面拔除冗長的說明文字與干擾視覺的 Emoji，轉向精簡、俐落的高質感 iOS 介面。
-清理幽靈藍球：徹底自專案中移除過時的 3D 地球模組（如 earth.js 及其紋理貼圖），確保歡迎頁面輕量、純粹。
+UI 減法工程：全面拔除冗長的說明文字與干擾視覺的 Emoji（含 ✕／☰／↺／⚠️ 等字元符號，一律改為 SVG 圖示），轉向精簡、俐落的高質感 iOS 介面。地圖頁參照 Apple「尋找 (Find My)」的乾淨簡約感。
+清理幽靈藍球：徹底自專案中移除過時的 3D 地球模組（earth.js、earth.jpg、earth-clouds.jpg），連同舊登入頁容器的初始化邏輯（landingHTML / closeLanding / updLanding / doLogin）與 CSS（#globe、#warp、.landing.v2、.lbtn、tp-breathe / tp-sheen 動畫）一併刪除，歡迎頁面輕量、純粹。
 
 5. 目前的資料結構 / Schema
 Firebase Auth 狀態：

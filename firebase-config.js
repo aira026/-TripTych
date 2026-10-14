@@ -1,4 +1,4 @@
-// ⚠️ 這個檔案必須是 ES Module：開頭要有 export，app.js 才讀得到。
+// 注意：這個檔案必須是 ES Module，開頭要有 export，app.js 才讀得到。
 // Firebase 網頁 apiKey 本來就會公開在前端，真正的保護靠 Firestore 安全規則（firestore.rules）。
 export const firebaseConfig = {
   apiKey: "AIzaSyB7Xddw50fPe5_Cv2HAXVb47sJGRn1nGgU",

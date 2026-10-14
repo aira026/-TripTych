@@ -31,7 +31,8 @@
 4. **公開範本注意**：發布前請確認行程備註沒有個人隱私；任何拿到代碼的人都能預覽與匯入。可隨時在「探索與範例」取消公開。
 
 ## 五、這一版的檔案結構與新增項目
-- **根目錄必須有**（不使用 vendor 資料夾）：`index.html`、`app.js`、`map.js`、`style.css`、`sw.js`、`trips.json`、`manifest.webmanifest`、`firebase-config.js`、`leaflet.js`、`leaflet.css`、`icon-180/192/512.png`，以及新增的 **`earth.jpg`、`earth-clouds.jpg`**（登入頁地球貼圖；缺檔時會自動退回簡易藍色地球，但不會那麼精緻）。
+- **根目錄必須有**（不使用 vendor 資料夾）：`index.html`、`app.js`、`map.js`、`auth.js`、`style.css`、`welcome.css`、`sw.js`、`trips.json`、`manifest.webmanifest`、`firebase-config.js`、`leaflet.js`、`leaflet.css`、`icon-180/192/512.png`。
+- **不需要 3D 地球相關檔案**：舊版的 `earth.js`、`earth.jpg`、`earth-clouds.jpg` 已全數移除，歡迎頁為極簡 iOS 風格，沒有任何 WebGL／貼圖依賴。
 - **Firestore 規則請重新貼上並發布**：新增了 `trips/{id}/live/{uid}`（成員即時定位）規則。沒更新的話，位置分享會寫入失敗。
-- **成員即時定位**：每個人要自己在「實際地圖」上方按「分享我的位置」才會分享（預設關閉），可隨時停止；12 小時後自動關閉；位置只有同一趟行程的成員看得到。只在 App 開啟時更新（網頁無法在背景持續定位）。
+- **成員即時定位**：每個人要自己在「實際地圖」下方按「分享位置」才會分享（預設關閉），可隨時停止；12 小時後自動關閉；位置只有同一趟行程的成員看得到。只在 App 開啟時更新（網頁無法在背景持續定位）。
 - **AI 小精靈**：目前 `aiEndpoint` 留空＝手動模式（免費）。若瀏覽器內建 AI 可用（例如部分版本的 Chrome），會多出「一鍵生成」。要啟用雲端一鍵模式，見 `ai-worker.js`。

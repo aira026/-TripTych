@@ -1,4 +1,4 @@
-/* auth.js — TripTych 登入 + 歡迎頁 + 轉場（v2：移除地球與 Redirect）
+/* auth.js — TripTick 登入 + 歡迎頁 + 轉場（v2：移除地球與 Redirect）
  *
  * 為什麼不再用 signInWithRedirect：
  *   網站在 github.io，Firebase 驗證網域是 xxx.firebaseapp.com（跨網域）。Safari / 無痕 / PWA 會分隔儲存空間，
@@ -142,7 +142,7 @@ function handleAuthError(e) {
   const code = (e && e.code) || '';
   if (state === S.ARRIVING || state === S.APP) return;
   if (CANCEL.includes(code)) { setBusy(false); return; }
-  console.error('[TripTych] 登入失敗', e);
+  console.error('[TripTick] 登入失敗', e);
   setBusy(false);
   if (ENV_BLOCKED.includes(code)) setMsg('此瀏覽器環境（例如無痕模式或擋彈出視窗）無法開啟登入視窗，請改用一般模式或允許彈出視窗。');
   else setMsg(MESSAGES[code] || `登入失敗，請再試一次。（${code || 'unknown'}）`);
@@ -211,7 +211,7 @@ async function transitionIn(user) {
   state = S.APP;
 
   if (loadErr) {
-    console.warn('[TripTych] 地圖/資料初始化未完成', loadErr);
+    console.warn('[TripTick] 地圖/資料初始化未完成', loadErr);
     notice('資料載入較慢或失敗，可稍後重新整理。');
     window.dispatchEvent(new CustomEvent('triptych:load-error', { detail: { error: loadErr } }));
   }
@@ -247,7 +247,7 @@ export function openLogin() { if (state === S.APP && !currentUser) { store.del(G
 
 /* ───────── 初始化 ───────── */
 async function init() {
-  if (!$('welcome')) { console.warn('[TripTych] 找不到 #welcome'); ungate(); resolveAuthReady(null); return; }
+  if (!$('welcome')) { console.warn('[TripTick] 找不到 #welcome'); ungate(); resolveAuthReady(null); return; }
   $('btn-google')?.addEventListener('click', onGoogleClick);   // 只註冊一次
   $('btn-skip')?.addEventListener('click', enterGuest);
   store.del('tp_auth_redirect');                                // 清掉舊版殘留旗標
@@ -263,15 +263,15 @@ async function init() {
     try { await authMod.setPersistence(auth, authMod.browserLocalPersistence); } catch (_) {}
     resolveAuthReady({ app, auth });
   } catch (e) {
-    console.error('[TripTych] Firebase 載入失敗', e);
+    console.error('[TripTick] Firebase 載入失敗', e);
     resolveAuthReady(null);
     if (store.get(GUEST_FLAG)) { enterDirect(null); return; }
     showWelcome(); setMsg('目前無法連線到登入服務。'); showSkip(true);
     return;
   }
 
-  if (cfg.googleClientId) initGis(cfg.googleClientId).catch((e) => console.warn('[TripTych] GIS 載入失敗，改用 Firebase 彈窗', e));
-  fb.onAuthStateChanged(auth, onAuthState, (e) => console.error('[TripTych] auth observer', e));
+  if (cfg.googleClientId) initGis(cfg.googleClientId).catch((e) => console.warn('[TripTick] GIS 載入失敗，改用 Firebase 彈窗', e));
+  fb.onAuthStateChanged(auth, onAuthState, (e) => console.error('[TripTick] auth observer', e));
 }
 
 init().catch((e) => { console.error(e); ungate(); });

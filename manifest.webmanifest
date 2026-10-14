@@ -1,6 +1,6 @@
 {
- "name": "【歷歷】/ TripTych",
- "short_name": "歷歷",
+ "name": "TripTick 歷歷",
+ "short_name": "TripTick",
  "start_url": "./",
  "scope": "./",
  "display": "standalone",

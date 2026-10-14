@@ -1,16 +1,16 @@
 <!DOCTYPE html>
 <html lang="zh-Hant"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#FAF6EF"><meta name="description" content="【歷歷】TripTych 旅行足跡與行程手冊">
-<link rel="manifest" href="manifest.webmanifest"><link rel="icon" type="image/png" href="icon-192.png"><link rel="apple-touch-icon" href="icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="歷歷"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#FAF6EF"><meta name="description" content="TripTick 歷歷 — 旅行足跡與行程手冊">
+<link rel="manifest" href="manifest.webmanifest"><link rel="icon" type="image/png" href="icon-192.png"><link rel="apple-touch-icon" href="icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="TripTick"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <!-- LINE 與社群分享預覽設定 -->
 <meta property="og:type" content="website">
-<meta property="og:title" content="【歷歷】TripTych - 你的隨身旅行助手">
-<meta property="og:description" content="展開地圖，點亮旅程中的每一個細節與故事。">
+<meta property="og:title" content="TripTick 歷歷 — 你的隨身旅行助手">
+<meta property="og:description" content="Take a Trip, Tick Every Moment.">
 <meta property="og:image" content="https://aira026.github.io/-TripTych/icon-512.png">
 <meta property="og:url" content="https://aira026.github.io/-TripTych/">
 <meta name="twitter:card" content="summary_large_image">
-<title>【歷歷】/ TripTych</title>
+<title>TripTick 歷歷</title>
 <!-- 啟動 gate：auth.js 決定顯示歡迎頁或 App 前先隱藏 App；6 秒保險，避免腳本失敗時畫面卡住 -->
 <script>document.documentElement.classList.add("tp-gate");setTimeout(function(){document.documentElement.classList.remove("tp-gate")},6000)</script>
 <link rel="stylesheet" href="leaflet.css">
@@ -19,8 +19,8 @@
 <body>
 <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
 <header class="top">
-<button class="menu" data-a="menu" aria-label="開啟選單" aria-controls="drawer">☰</button>
-<div><a href="./" class="brand" data-a="home" aria-label="回到首頁"><span class="eyebrow">TripTych</span><h1>【歷歷】/ TripTych</h1></a><p class="crumb" id="crumb"></p></div><button class="who" id="who" data-a="auth" aria-label="登入／登出">登入</button>
+<button class="menu" data-a="menu" aria-label="開啟選單" aria-controls="drawer"><svg viewBox="0 0 24 24" width="19" height="19" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+<div><a href="./" class="brand" data-a="home" aria-label="回到首頁"><span class="eyebrow">TripTick</span><h1>歷歷</h1></a><p class="crumb" id="crumb"></p></div><button class="who" id="who" data-a="auth" aria-label="登入／登出">登入</button>
 </header>
 <aside class="drawer" id="drawer" aria-label="目錄"></aside><div class="scrim" id="scrim" data-a="menu"></div>
 <main>
@@ -36,11 +36,12 @@
 <div id="modal" class="modal"><div class="sheet glass" id="sheet"></div></div><div id="toast" class="toast"></div>
 
 <!-- 歡迎頁 -->
-<div id="welcome" class="welcome" role="dialog" aria-modal="true" aria-label="歡迎來到 TripTych" hidden>
+<div id="welcome" class="welcome" role="dialog" aria-modal="true" aria-label="歡迎來到 TripTick 歷歷" hidden>
   <div class="welcome-ui">
     <div class="welcome-brand">
-      <h2>【歷歷】<span class="wm">TripTych</span></h2>
-      <p>展開地圖，點亮旅程中的每一個細節與故事。</p>
+      <h2>TripTick</h2>
+      <p class="wm">歷歷</p>
+      <p class="wtag">Take a Trip, Tick Every Moment.</p>
     </div>
     <div class="welcome-actions">
       <button id="btn-google" class="gbtn" type="button" aria-busy="false">
@@ -55,7 +56,7 @@
 </div>
 
 <script src="leaflet.js"></script>
-<script src="map.js"></script><script>addEventListener("error",function(e){if(window.__tp)return;var b=document.getElementById("t-now");if(b)b.innerHTML='<div class="glass blk"><p>⚠️ 程式載入失敗：'+String(e.message||"").replace(/</g,"&lt;")+'</p><p class="meta">常見原因：firebase-config.js 少了 export（請用 export const firebaseConfig = {…}）。</p></div>'});</script>
+<script src="map.js"></script><script>addEventListener("error",function(e){if(window.__tp)return;var b=document.getElementById("t-now");if(b)b.innerHTML='<div class="glass blk"><p>載入失敗：'+String(e.message||"").replace(/</g,"&lt;")+'</p><p class="meta">常見原因：firebase-config.js 少了 export（請用 export const firebaseConfig = {…}）。</p></div>'});</script>
 <script type="module" src="auth.js"></script>
 <script type="module" src="app.js"></script>
 </body></html>

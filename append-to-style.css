@@ -1,4 +1,28 @@
-/* ===== 貼到 style.css 最後面 ===== */
+/* ============================================================
+ * 已棄用（DEPRECATED）— 內容已於 2026-10 整併進 style.css
+ *
+ * 這個檔案原本是「貼到 style.css 最後面」的暫存區，但從來沒有被
+ * index.html 引入，導致 AI 助理介面（.ai-*）、成員定位膠囊（.pst）
+ * 與請求列（#reqbar）長期沒有樣式。現已全部正式寫入 style.css。
+ *
+ * 保留本檔僅供對照，請勿再編輯；新樣式請直接加在 style.css。
+ * ============================================================ */
+:root{--tp-gold:214,160,80;--tp-ink:#2a2824;--tp-ink2:#6f685d;--tp-navy:#1f3a5f}
+
+/* ---- 舊登入頁 v2（#landing）已隨 3D 地球一併移除，以下規則已廢棄 ----
+.landing.v2{...}
+.lbtn{...}
+@keyframes tp-breathe{...}
+@keyframes tp-sheen{...}
+.landing.v2.iris{...}
+.landing.v2.out{...}
+------------------------------------------------------------------------- */
+
+/* ---- AI 小精靈：已移至 style.css ---- */
+/* ---- 找人（.pst / #reqbar）：已移至 style.css ---- */
+
+@media (prefers-reduced-motion:reduce){.ai-sk i{animation:none}}
+
 :root{--tp-gold:214,160,80;--tp-ink:#2a2824;--tp-ink2:#6f685d;--tp-navy:#1f3a5f}
 
 /* ---- 登入頁 v2：無地球，呼吸閃爍的登入按鈕 ---- */

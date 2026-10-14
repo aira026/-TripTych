@@ -1,10 +1,11 @@
-/* welcome.css — 歡迎頁（v2：無地球，呼吸閃爍的登入按鈕） */
+/* welcome.css — TripTick 歷歷 歡迎頁（極簡 iOS 風格：大量留白、無裝飾、無 Emoji） */
 :root{
   --tp-cream:#FAF6EF;
-  --tp-ink:#2a2824;
-  --tp-ink-2:#6f685d;
-  --tp-navy:#1f3a5f;
+  --tp-ink:#1c1b19;
+  --tp-ink-2:#8a837a;
+  --tp-navy:#1c1b19;
   --tp-gold:214,160,80;
+  --tp-hairline:rgba(28,27,25,.09);
 }
 
 /* 啟動 gate：auth 決定顯示歡迎頁或 App 前先隱藏 App（用 visibility 保留版面，Leaflet 才量得到尺寸） */
@@ -16,7 +17,7 @@ html.tp-gate .aurora{visibility:hidden}
 
 .welcome{
   position:fixed;inset:0;z-index:1000;overflow:hidden;color:var(--tp-ink);
-  background:radial-gradient(110% 70% at 50% 38%,#FFFCF6 0%,var(--tp-cream) 60%,#F2EADC 100%);
+  background:#FFFFFF;
   --ox:50%;--oy:72%;--R:150vmax;
   clip-path:circle(var(--R) at var(--ox) var(--oy));
   opacity:0;transition:opacity .5s ease;
@@ -32,69 +33,61 @@ html.tp-gate .aurora{visibility:hidden}
 
 .welcome-ui{
   position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:56px;padding:calc(env(safe-area-inset-top,0px) + 24px) 28px calc(env(safe-area-inset-bottom,0px) + 24px);
+  gap:64px;padding:calc(env(safe-area-inset-top,0px) + 24px) 32px calc(env(safe-area-inset-bottom,0px) + 24px);
   text-align:center;
 }
-.welcome-brand h2{margin:0;font-size:40px;font-weight:600;letter-spacing:.08em;line-height:1.2}
-.welcome-brand .wm{display:block;margin-top:8px;font-size:15px;font-weight:400;letter-spacing:.16em;color:var(--tp-ink-2)}
-.welcome-brand p{margin:20px auto 0;max-width:18em;font-size:15px;line-height:1.8;color:var(--tp-ink-2)}
 
-.welcome-actions{width:100%;display:flex;flex-direction:column;align-items:center;gap:10px}
+/* 品牌：TripTick + 歷歷，純字重與字距的層次，不使用任何裝飾 */
+.welcome-brand h2{margin:0;font-size:42px;font-weight:600;letter-spacing:-.022em;line-height:1.05;color:var(--tp-ink)}
+.welcome-brand .wm{margin:10px 0 0;font-size:15px;font-weight:400;letter-spacing:.42em;text-indent:.42em;color:var(--tp-ink-2)}
+.welcome-brand .wtag{margin:22px auto 0;max-width:20em;font-size:14px;font-weight:400;line-height:1.6;letter-spacing:.01em;color:var(--tp-ink-2)}
 
-/* 呼吸 + 閃爍的登入按鈕 */
+.welcome-actions{width:100%;display:flex;flex-direction:column;align-items:center;gap:14px}
+
+/* 主按鈕：iOS 實心膠囊 */
 .gbtn{
   position:relative;overflow:hidden;isolation:isolate;
   display:flex;align-items:center;justify-content:center;gap:10px;
-  width:min(100%,320px);min-height:56px;padding:0 24px;border-radius:28px;
-  background:#fffdf9;color:var(--tp-ink);font-family:inherit;font-size:16px;font-weight:600;line-height:1;
-  border:1px solid rgba(var(--tp-gold),.35);cursor:pointer;
+  width:min(100%,340px);min-height:52px;padding:0 24px;border-radius:26px;
+  background:#1c1b19;color:#fff;font-family:inherit;font-size:16px;font-weight:600;line-height:1;letter-spacing:.01em;
+  border:0;cursor:pointer;
   -webkit-tap-highlight-color:transparent;
-  animation:tp-breathe 3.6s ease-in-out infinite;
+  transition:transform .18s ease,opacity .18s ease;
 }
-/* 掃光：每幾秒從左掃到右 */
-.gbtn::after{
-  content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
-  background:linear-gradient(105deg,transparent 38%,rgba(var(--tp-gold),.30) 50%,transparent 62%);
-  transform:translateX(-130%);
-  animation:tp-sheen 5s ease-in-out 1.2s infinite;
-}
-@keyframes tp-breathe{
-  0%,100%{transform:scale(1);box-shadow:0 6px 18px rgba(70,52,24,.10),0 0 0 0 rgba(var(--tp-gold),.0)}
-  50%{transform:scale(1.035);box-shadow:0 10px 26px rgba(70,52,24,.15),0 0 0 11px rgba(var(--tp-gold),.10)}
-}
-@keyframes tp-sheen{0%,55%{transform:translateX(-130%)}85%,100%{transform:translateX(130%)}}
-
-.gbtn:active{animation:none;transform:scale(.97);box-shadow:0 2px 8px rgba(70,52,24,.12)}
-.gbtn:focus-visible,.welcome .link:focus-visible{outline:2px solid var(--tp-navy);outline-offset:4px}
-.gbtn.is-pending,.welcome.arriving .gbtn{animation:none;cursor:progress}
-.gbtn.is-pending::after,.welcome.arriving .gbtn::after{animation:none;opacity:0}
+.gbtn:active{transform:scale(.975);opacity:.88}
+.gbtn .gicon{display:block}
 .gbtn .spin{
   display:none;width:18px;height:18px;border-radius:50%;
-  border:2px solid rgba(31,58,95,.18);border-top-color:var(--tp-navy);animation:tp-spin .8s linear infinite;
+  border:2px solid rgba(255,255,255,.3);border-top-color:#fff;animation:tp-spin .8s linear infinite;
 }
 .gbtn.is-pending .gicon{display:none}
 .gbtn.is-pending .spin{display:block}
 @keyframes tp-spin{to{transform:rotate(360deg)}}
 
-.welcome-msg{min-height:20px;max-width:22em;margin:0;font-size:13.5px;line-height:1.55;color:#9a4a3a}
+.gbtn:focus-visible,.welcome .link:focus-visible{outline:2px solid var(--tp-navy);outline-offset:4px}
+.gbtn.is-pending,.welcome.arriving .gbtn{cursor:progress}
+
+/* 次要動作：純文字，不加底色 */
 .welcome .link{
-  background:none;border:0;padding:8px 12px;font:inherit;font-size:14px;
-  color:var(--tp-ink-2);text-decoration:underline;text-underline-offset:3px;cursor:pointer;
+  background:none;border:0;padding:10px 14px;font:inherit;font-size:14px;
+  color:var(--tp-ink-2);cursor:pointer;-webkit-tap-highlight-color:transparent;
 }
 .welcome .link[hidden]{display:none}
+.welcome-msg{min-height:20px;max-width:22em;margin:0;font-size:13px;line-height:1.55;color:#a1443a}
 
 /* 輕量提示 */
 .tp-notice{
   position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 24px);z-index:1100;
   transform:translate(-50%,12px);max-width:calc(100vw - 40px);padding:11px 16px;border-radius:14px;
-  background:rgba(42,40,36,.92);color:#fff;font-size:14px;line-height:1.5;
+  background:rgba(28,27,25,.92);color:#fff;font-size:14px;line-height:1.5;
   opacity:0;transition:opacity .3s ease,transform .3s ease;pointer-events:none;
 }
 .tp-notice.on{opacity:1;transform:translate(-50%,0)}
 
-/* 減少動態：停止呼吸與掃光，揭曉改為淡出 */
+/* 減少動態：揭曉改為淡出 */
 @media (prefers-reduced-motion:reduce){
-  .gbtn,.gbtn::after{animation:none}
-  .gbtn::after{display:none}
+  .gbtn{transition:none}
+  .gbtn .spin{animation:none}
   .welcome.revealing{clip-path:circle(var(--R) at var(--ox) var(--oy));opacity:0;transition:opacity .25s ease}
 }
+
