@@ -639,8 +639,7 @@ document.addEventListener("click",e=>{const b=e.target.closest("[data-a]");if(!b
   case"aimodeset":{const h=$("#ai-mode");if(h)h.value=v;b.parentNode.querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));break}
   case"people":{const t=T0();if(t&&me)modal(peopleHTML(t));break}
   case"askloc":{const t=T0();if(t&&me)askLoc(t,v);break}
-  case"safetoggle":{const t=T0();if(!t||!me)break;if(safeOn(t.id)){try{localStorage.removeItem(safeKey(t.id))}catch(e){}if(LOCWATCH==null&&db)deleteDoc(locDoc(t.id,me.uid)).catch(()=>{});toast("已關閉自動更新
-   ");modal(peopleHTML(t));updLocBar()}
+  case"safetoggle":{const t=T0();if(!t||!me)break;if(safeOn(t.id)){try{localStorage.removeItem(safeKey(t.id))}catch(e){}if(LOCWATCH==null&&db)deleteDoc(locDoc(t.id,me.uid)).catch(()=>{});toast("已關閉自動更新");modal(peopleHTML(t));updLocBar()}
    else if(confirm("開啟後，每次打開 App 都會更新你的最後已知位置給這趟行程的成員。要開啟嗎？")){try{localStorage.setItem(safeKey(t.id),String(Date.now()))}catch(e){}SAFE_T=Date.now();writeLast(t,"last").then(ok=>{toast(ok?"自動更新已開啟":"沒有定位權限，請在瀏覽器設定允許");modal(peopleHTML(t));updLocBar()})}break}
   case"checkin":{const t=T0();if(!t||!me)break;toast("取得位置中…");writeLast(t,"checkin",true).then(ok=>toast(ok?"已向成員報平安":"取得位置失敗，請確認定位權限"));break}
   case"reqshare":{const t=T0();if(!t||!me)break;startShare(t);try{localStorage.setItem(locKey(t.id),String(Date.now()-LOCMAX+3600e3))}catch(e){}deleteDoc(reqDoc(t.id,me.uid)).catch(()=>{});toast("已開始分享，1 小時後自動停止");break}
