@@ -602,7 +602,7 @@ const navLinks=(lat,lng)=>{const g=`https://www.google.com/maps/dir/?api=1&desti
 function memberPopup(p){const el=document.createElement("div");el.className="pp";const min=Math.max(0,Math.round((Date.now()-p.ts)/60000)),nl=navLinks(p.lat,p.lng);
  el.innerHTML=`<div class="mit"><b>${esc(p.name)}</b><span class="chip live">${p.me?"我":KL[p.kind]||"位置"}</span></div><p class="mis">${ago(min)}更新${p.acc?`・±${p.acc} 公尺`:""}</p>${p.me?"":`<div class="pills"><a class="pill" href="${nl[0][1]}" target="_blank" rel="noopener">導航</a><button class="pill gl" data-a="askloc" data-v="${esc(p.uid)}">請求即時</button></div><p class="meta mis-l"><a href="${nl[1][1]}" target="_blank" rel="noopener">改用 ${nl[1][0]}</a></p>`}`;return el}
 
-/* ---- 找人：安全網 / 請求位置 / 報平安 ---- */
+/* ---- 找人：自動更新 / 請求位置 / 報平安 ---- */
 const SAFE_MAX=14*864e5,safeKey=id=>"tp-safe-"+id;
 const safeOn=id=>{try{const v=+localStorage.getItem(safeKey(id));return!!v&&Date.now()-v<SAFE_MAX}catch(e){return false}};
 const ago=m=>m==null?"":m<1?"剛剛":m<60?m+" 分鐘前":m<1440?Math.round(m/60)+" 小時前":Math.round(m/1440)+" 天前";
@@ -626,9 +626,9 @@ function showReq(d){let b=document.getElementById("reqbar");if(!d||Date.now()-(d
 function askLoc(t,uid){setDoc(reqDoc(t.id,uid),{from:me.uid,fromName:me.displayName||"成員",ts:Date.now()}).then(()=>toast("已通知對方")).catch(e=>toast("失敗："+(e.code||e.message)))}
 function peopleHTML(t){const now=Date.now(),sf=safeOn(t.id);
  return`<h3>成員位置</h3>${t.members.map(u=>{const d=LOCS[u],age=d?Math.round((now-(d.ts||0))/60000):null,k=d&&(d.kind||"live"),nl=d?navLinks(d.lat,d.lng)[0]:null;
-  const st=!d?'<small class="meta">尚未分享位置</small>':`<span class="pst ${k}">${k==="live"&&age<30?"即時":k==="checkin"?"報平安":"最後已知"}</span> <small class="meta">${ago(age)}</small>`;
+  const st=!d?'<small class="meta">尚未分享位置</small>':`<span class="pst ${k}">${k==="live"&&age<30?"即時":k==="checkin"?"自動更新":"最後已知"}</span> <small class="meta">${ago(age)}</small>`;
   return`<div class="row"><span><b>${esc(nameOf(t,u))}</b>${u===me.uid?' <small class="meta">你</small>':""}<br>${st}</span><span>${d&&u!==me.uid?`<a class="cb" href="${nl[1]}" target="_blank" rel="noopener">導航</a>`:""}${u!==me.uid?`<button class="cb" data-a="askloc" data-v="${esc(u)}">請求位置</button>`:""}</span></div>`}).join("")}
- <h4 class="meta">安全網</h4>
+ <h4 class="meta">自動更新</h4>
  <p class="meta">開啟後，每次打開 App 會自動更新你的最後已知位置給同行成員。</p>
  <div class="pills"><button class="pill ${sf?"gl":""}" data-a="safetoggle">${sf?"關閉":"開啟"}</button><button class="pill gl" data-a="checkin">報平安</button></div>`}
 
@@ -639,8 +639,9 @@ document.addEventListener("click",e=>{const b=e.target.closest("[data-a]");if(!b
   case"aimodeset":{const h=$("#ai-mode");if(h)h.value=v;b.parentNode.querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));break}
   case"people":{const t=T0();if(t&&me)modal(peopleHTML(t));break}
   case"askloc":{const t=T0();if(t&&me)askLoc(t,v);break}
-  case"safetoggle":{const t=T0();if(!t||!me)break;if(safeOn(t.id)){try{localStorage.removeItem(safeKey(t.id))}catch(e){}if(LOCWATCH==null&&db)deleteDoc(locDoc(t.id,me.uid)).catch(()=>{});toast("已關閉安全網");modal(peopleHTML(t));updLocBar()}
-   else if(confirm("開啟後，每次打開 App 都會更新你的最後已知位置給這趟行程的成員。要開啟嗎？")){try{localStorage.setItem(safeKey(t.id),String(Date.now()))}catch(e){}SAFE_T=Date.now();writeLast(t,"last").then(ok=>{toast(ok?"安全網已開啟":"沒有定位權限，請在瀏覽器設定允許");modal(peopleHTML(t));updLocBar()})}break}
+  case"safetoggle":{const t=T0();if(!t||!me)break;if(safeOn(t.id)){try{localStorage.removeItem(safeKey(t.id))}catch(e){}if(LOCWATCH==null&&db)deleteDoc(locDoc(t.id,me.uid)).catch(()=>{});toast("已關閉自動更新
+   ");modal(peopleHTML(t));updLocBar()}
+   else if(confirm("開啟後，每次打開 App 都會更新你的最後已知位置給這趟行程的成員。要開啟嗎？")){try{localStorage.setItem(safeKey(t.id),String(Date.now()))}catch(e){}SAFE_T=Date.now();writeLast(t,"last").then(ok=>{toast(ok?"自動更新已開啟":"沒有定位權限，請在瀏覽器設定允許");modal(peopleHTML(t));updLocBar()})}break}
   case"checkin":{const t=T0();if(!t||!me)break;toast("取得位置中…");writeLast(t,"checkin",true).then(ok=>toast(ok?"已向成員報平安":"取得位置失敗，請確認定位權限"));break}
   case"reqshare":{const t=T0();if(!t||!me)break;startShare(t);try{localStorage.setItem(locKey(t.id),String(Date.now()-LOCMAX+3600e3))}catch(e){}deleteDoc(reqDoc(t.id,me.uid)).catch(()=>{});toast("已開始分享，1 小時後自動停止");break}
   case"reqskip":{const t=T0();if(t&&me)deleteDoc(reqDoc(t.id,me.uid)).catch(()=>{});break}
