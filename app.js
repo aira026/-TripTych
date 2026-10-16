@@ -141,26 +141,126 @@ function mapZoom(t,k){const mz=$("#mz");if(zm===k){zm=null;mz.style.transform=""
 
 /* cards */
 function tcard(t){if(t.status==="past")return pcard(t);const fut=t.status==="future",mine=String(t.id).startsWith("u-");
- return`<article class="glass tc ${fut?"fut":""}"><div class="ph">${t.image?`<img src="${esc(t.image)}" alt="${esc(t.title)}" loading="lazy" onerror="this.remove()">`:""}<span>${flagOf(t)}</span></div><div class="in"><h3>${esc(t.title)}</h3><p class="meta">${esc(t.country)}・${esc(t.startDate||"日期未定")}${t.endDate?" – "+esc(t.endDate.slice(5)):""}・${nd(t)} 天</p>${t.notes?`<p style="margin-top:8px;font-size:.9rem">${esc(t.notes)}</p>`:""}
+ return`<article class="glass tc ${fut?"fut":""}"><div class="ph">${(t.image||photosOf(t.id)[0])?`<img src="${esc(t.image||photosOf(t.id)[0])}" alt="${esc(t.title)}" loading="lazy" onerror="this.remove()">`:""}<span>${flagOf(t)}</span></div><div class="in"><h3>${esc(t.title)}</h3><p class="meta">${esc(t.country)}・${esc(t.startDate||"日期未定")}${t.endDate?" – "+esc(t.endDate.slice(5)):""}・${nd(t)} 天</p>${t.notes?`<p style="margin-top:8px;font-size:.9rem">${esc(t.notes)}</p>`:""}
  <div class="pills" style="margin-top:10px">${t.spots?.length?`<a class="pill gl" href="https://maps.google.com/?q=${t.spots[0].lat},${t.spots[0].lng}" target="_blank" rel="noopener">地圖</a>`:""}${t.status==="past"?`<button class="pill" data-a="setcur" data-v="${esc(t.id)}">重新設為當前行程</button>`:""}${fut?`<button class="pill" data-a="setcur" data-v="${esc(t.id)}">設為當前行程</button>`:""}${me?`<button class="pill gl" data-a="edit" data-v="${esc(t.id)}"><i class=i-edit></i> 編輯</button>`:""}${t.owner===me?.uid?`<button class="pill gl" data-a="del" data-v="${esc(t.id)}"><svg class="ix" viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg> 刪除</button>`:""}</div></div></article>`}
 
-/* 歷史行程：明信片卡片（左欄文字＋右欄照片） */
+/* ===== 行程照片：本機相簿上傳（FileReader → Base64，存 localStorage，上限 10 張） ===== */
+const PH_MAX=10,PH_KEY=id=>"tp-photos-"+id;
+function photosOf(id){try{const a=JSON.parse(localStorage.getItem(PH_KEY(id)));return Array.isArray(a)?a.filter(x=>typeof x==="string"&&x.indexOf("data:image")===0):[]}catch(e){return[]}}
+function savePhotos(id,a){try{localStorage.setItem(PH_KEY(id),JSON.stringify(a));return true}catch(e){console.warn("[photos] 本機儲存失敗",e);toast("照片存不下：這台裝置的本機空間不足，請少放幾張");return false}}
+/* 先用 FileReader 讀成 Base64，再以 canvas 縮到長邊 1280、JPEG 0.78，避免爆 localStorage 額度 */
+function shrinkImg(f){return new Promise(res=>{const fr=new FileReader();
+ fr.onerror=()=>res(null);
+ fr.onload=()=>{const im=new Image(),raw=String(fr.result||"");
+  im.onerror=()=>res(raw.indexOf("data:image")===0?raw:null);
+  im.onload=()=>{try{const max=1280,s=Math.min(1,max/Math.max(im.width,im.height)),c=document.createElement("canvas");
+    c.width=Math.max(1,Math.round(im.width*s));c.height=Math.max(1,Math.round(im.height*s));
+    const g=c.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,c.width,c.height);g.drawImage(im,0,0,c.width,c.height);
+    res(c.toDataURL("image/jpeg",.78))}catch(e){res(raw.indexOf("data:image")===0?raw:null)}};
+  im.src=raw};
+ fr.readAsDataURL(f)})}
+async function addPhotos(id,files){const list=[...(files||[])].filter(f=>f&&/^image\//.test(f.type));
+ if(!list.length)return toast("請選擇圖片檔");
+ const cur=photosOf(id),room=PH_MAX-cur.length;
+ if(room<=0)return toast(`每個行程最多 ${PH_MAX} 張照片`);
+ if(list.length>room)toast(`最多 ${PH_MAX} 張，這次只加入前 ${room} 張`);
+ toast("上傳中…");const add=[];
+ for(const f of list.slice(0,room)){const d=await shrinkImg(f);if(d)add.push(d)}
+ if(!add.length)return toast("上傳失敗，請換一張圖片試試");
+ if(savePhotos(id,cur.concat(add))){render();toast("照片已加入")}}
+
+/* ===== 歷史行程：明信片卡片（左欄文字 + 右欄 3:4 照片框） ===== */
 function pcard(t){
  const dateTxt=`${t.startDate||"日期未定"}${t.endDate?" – "+t.endDate.slice(5):""}`;
  const mates=[...new Set(t.members||[])].map(u=>nameOf(t,u)).map(n=>/^[0-9a-zA-Z]{20,}$/.test(n)?"同行者":n);
  const mateTxt=mates.length?mates.join("、"):"自行出發";
- return`<article class="pc">
- <div class="pc-l">
-  <h3>${esc(t.title)}</h3>
-  <p class="pc-meta">${flagOf(t)} ${esc(t.country)||"未知國家"}・${esc(dateTxt)}・${nd(t)} 天</p>
-  <p class="pc-mates">同行：${esc(mateTxt)}</p>
-  <div class="pc-note"><em>心情札記</em><p>${t.notes?esc(t.notes):"還沒有寫下這趟旅程的心情札記…"}</p></div>
-  <div class="pills pc-act">${me?`<button class="pill" data-a="edit" data-v="${esc(t.id)}"><i class=i-edit></i> 編輯</button>`:""}${t.spots?.length?`<a class="pill gl" href="https://maps.google.com/?q=${t.spots[0].lat},${t.spots[0].lng}" target="_blank" rel="noopener">地圖</a>`:""}${t.status==="past"?`<button class="pill gl" data-a="setcur" data-v="${esc(t.id)}">設為當前行程</button>`:""}${t.owner===me?.uid?`<button class="pill gl" data-a="del" data-v="${esc(t.id)}"><svg class="ix" viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg> 刪除</button>`:""}</div>
- </div>
- <div class="pc-r">
-  <figure class="pc-photo"><span class="pc-blank" aria-hidden="true"><b>${flagOf(t)}</b><small>照片待補</small></span>${t.image?`<img src="${esc(t.image)}" alt="${esc(t.title)}" loading="lazy" onerror="this.remove()">`:""}</figure>
+ const P=photosOf(t.id),n=P.length;
+ const strip=P.map((src,i)=>`<div class="pc-slide"><img src="${src}" alt="${esc(t.title)} 照片 ${i+1}" loading="lazy"></div>`).join("");
+ const dots=n>1?`<div class="pc-dots">${P.map((_,i)=>`<i class="${i?"":"on"}" data-i="${i}"></i>`).join("")}</div>`:"";
+ return`<article class="pc-item" data-pid="${esc(t.id)}">
+ <div class="pc">
+  <div class="pc-l">
+   <h3>${esc(t.title)}</h3>
+   <p class="pc-meta">${flagOf(t)} ${esc(t.country)||"未知國家"}・${esc(dateTxt)}・${nd(t)} 天</p>
+   <p class="pc-mates">同行：${esc(mateTxt)}</p>
+   <div class="pc-note"><em>心情札記</em><p>${t.notes?esc(t.notes):"還沒有寫下這趟旅程的心情札記…"}</p></div>
+   <div class="pills pc-act">${me?`<button class="pill" data-a="edit" data-v="${esc(t.id)}"><i class=i-edit></i> 編輯</button>`:""}${t.spots?.length?`<a class="pill gl" href="https://maps.google.com/?q=${t.spots[0].lat},${t.spots[0].lng}" target="_blank" rel="noopener">地圖</a>`:""}${t.status==="past"?`<button class="pill gl" data-a="setcur" data-v="${esc(t.id)}">設為當前行程</button>`:""}${t.owner===me?.uid?`<button class="pill gl" data-a="del" data-v="${esc(t.id)}"><svg class="ix" viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg> 刪除</button>`:""}</div>
+  </div>
+  <div class="pc-r">
+   <div class="pc-shot" data-i="0">
+    <div class="pc-strip">${strip}</div>
+    ${n?"":'<div class="pc-blank"><span>照片待補</span></div>'}
+    ${dots}
+    ${n?`<button class="pc-x" data-a="phdel" data-v="${esc(t.id)}" aria-label="移除這張照片"><svg class="ix" viewBox="0 0 24 24" width="13" height="13" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>`:""}
+   </div>
+   <label class="pc-up">＋ 上傳照片<input class="pc-file" type="file" accept="image/*" multiple data-ph="${esc(t.id)}"></label>
+   <small class="pc-hint">${n}/${PH_MAX}</small>
+  </div>
  </div>
 </article>`}
+
+/* ===== 明信片卡片堆疊：絕對定位疊合、滑開／點擊輪替 ===== */
+let STK=[];
+function syncSTK(){const box=$("#l-past");if(box)STK=[...box.querySelectorAll(".pc-item")].map(e=>e.dataset.pid)}
+function stackInit(){const box=$("#l-past");if(!box)return;
+ const items=[...box.querySelectorAll(".pc-item")],ids=items.map(e=>e.dataset.pid);
+ STK=STK.filter(id=>ids.includes(id));ids.forEach(id=>{if(!STK.includes(id))STK.push(id)});
+ STK.forEach(id=>{const el=items.find(e=>e.dataset.pid===id);if(el)box.appendChild(el)});
+ items.forEach(el=>{bindCard(el);bindShot(el)});stackLayout();syncSTK()}
+function stackLayout(){const box=$("#l-past");if(!box)return;
+ [...box.querySelectorAll(".pc-item")].forEach((el,i)=>{
+  const d=Math.min(i,3);
+  el.style.zIndex=el.classList.contains("out")?"999":String(100-i);
+  el.classList.toggle("top",i===0);
+  el.style.visibility=i>4?"hidden":"visible";
+  if(el.classList.contains("dragging")||el.classList.contains("out"))return;
+  el.style.transform=i?`translateY(${-10*d}px) scale(${(1-.05*d).toFixed(3)})`:""})}
+function rotateTop(dir){const box=$("#l-past");if(!box)return;
+ const items=[...box.querySelectorAll(".pc-item")];if(items.length<2)return;
+ const top=items[0];top.classList.add("dragging","out");
+ top.style.transform=`translate3d(${dir<0?-140:140}%,0,0) rotate(${dir<0?-8:8}deg)`;
+ box.appendChild(top);stackLayout();syncSTK();
+ setTimeout(()=>{top.classList.remove("dragging","out");top.style.transform="";stackLayout()},380)}
+function bindCard(el){if(el._stk)return;el._stk=1;
+ let x0=0,y0=0,armed=false,drag=false,isTop=false,seen=false;
+ el.addEventListener("pointerdown",e=>{if(e.button)return;
+  if(e.target.closest(".pc-shot,.pc-up,button,a,input,label,textarea,select"))return;
+  seen=true;x0=e.clientX;y0=e.clientY;armed=true;drag=false;
+  const items=[...el.parentNode.querySelectorAll(".pc-item")];
+  isTop=items[0]===el;
+  if(isTop){el.classList.add("dragging");try{el.setPointerCapture(e.pointerId)}catch(_){}}});
+ el.addEventListener("pointermove",e=>{if(!armed||!isTop)return;
+  const dx=e.clientX-x0,dy=e.clientY-y0;
+  if(!drag&&Math.hypot(dx,dy)>8)drag=true;
+  if(drag)el.style.transform=`translate3d(${dx}px,${dy*.3}px,0) rotate(${Math.max(-7,Math.min(7,dx/26))}deg)`});
+ const end=e=>{if(!seen)return;seen=false;
+  const cx=e.clientX==null?x0:e.clientX,cy=e.clientY==null?y0:e.clientY;
+  const dx=cx-x0,tap=Math.hypot(dx,cy-y0)<12;
+  if(!isTop){ /* 疊在後面的卡片：點一下拿到最上層 */
+   if(tap&&e.type==="pointerup"){const box=$("#l-past");if(box){box.insertBefore(el,box.firstChild);stackLayout();syncSTK()}}
+   return}
+  if(!armed)return;armed=false;drag=false;el.classList.remove("dragging");
+  if(tap){el.style.transform="";rotateTop(-1);return}                 /* 點擊 → 移到最底層 */
+  if(Math.abs(dx)>90){el.style.transform="";rotateTop(dx<0?-1:1);return} /* 滑動 → 飛開再墊底 */
+  el.style.transform="";stackLayout()};                              /* 回彈 */
+ el.addEventListener("pointerup",end);
+ el.addEventListener("pointercancel",()=>{if(!seen)return;seen=false;armed=false;drag=false;el.classList.remove("dragging");el.style.transform="";stackLayout()})}
+function bindShot(item){const shot=item.querySelector(".pc-shot");if(!shot||shot._b)return;shot._b=1;
+ const strip=shot.querySelector(".pc-strip");const n=strip?strip.children.length:0;if(!n)return;
+ let x0=null,moved=false,idx=0;
+ const set=i=>{idx=Math.max(0,Math.min(n-1,i));shot.dataset.i=idx;strip.style.transition="";strip.style.transform=`translateX(${-idx*100}%)`;
+  shot.querySelectorAll(".pc-dots i").forEach((d,k)=>d.classList.toggle("on",k===idx))};
+ shot.addEventListener("pointerdown",e=>{if(e.target.closest(".pc-x,.pc-dots"))return;x0=e.clientX;moved=false});
+ shot.addEventListener("pointermove",e=>{if(x0==null)return;const d=e.clientX-x0;
+  if(Math.abs(d)>6)moved=true;
+  if(moved){strip.style.transition="none";strip.style.transform=`translateX(calc(${-idx*100}% + ${d}px))`}});
+ const up=e=>{if(x0==null)return;const d=e.clientX==null?0:e.clientX-x0;x0=null;
+  if(!moved){set(idx+1>=n?0:idx+1);return}
+  if(d<=-40)set(idx+1);else if(d>=40)set(idx-1);else set(idx)};
+ shot.addEventListener("pointerup",up);
+ shot.addEventListener("pointercancel",()=>{if(x0==null)return;x0=null;set(idx)});
+ const dots=shot.querySelector(".pc-dots");
+ if(dots)dots.addEventListener("click",e=>{const i=e.target&&e.target.dataset?e.target.dataset.i:null;if(i!=null)set(+i)})}
 
 /* add / edit */
 function form(st,id){const t0=TRIPS.find(x=>x.id===id),t=t0?{...t0,status:statusOf(t0)}:{status:st,spots:[]},sp=t.spots?.[0]||{};
@@ -169,7 +269,7 @@ function form(st,id){const t0=TRIPS.find(x=>x.id===id),t=t0?{...t0,status:status
  <label>國家<input id="f-country" list="cl" value="${esc(t.country)}" placeholder="例如：泰國" required></label><datalist id="cl">${Object.keys(FL).map(k=>`<option value="${k}">`).join("")}</datalist>
  <div class="two"><label>出發日<input id="f-s" type="date" value="${esc(t.startDate)}"></label><label>回程日<input id="f-e" type="date" value="${esc(t.endDate)}"></label></div>
  <label>類型<select id="f-st"><option value="now" ${t.status==="now"?"selected":""}>當前旅程</option><option value="past" ${t.status==="past"?"selected":""}>歷史旅程</option><option value="future" ${t.status==="future"?"selected":""}>未來清單</option></select></label>
- <label>圖片連結<input id="f-img" type="url" value="${esc(t.image)}" placeholder="https://…"></label>
+ ${id?`<label>照片（本機相簿，最多 ${PH_MAX} 張）<span class="pc-up">從相簿選擇<input class="pc-file" type="file" accept="image/*" multiple data-ph="${esc(id)}"></span></label>`:`<label>照片<span class="meta">先按「儲存」建立行程，再到歷史明信片右側上傳（最多 ${PH_MAX} 張）。</span></label>`}
  <label>備註<textarea id="f-note" rows="3">${esc(t.notes)}</textarea></label>
  <details><summary>進階：座標（留空會自動查詢）</summary><div class="two"><label>緯度<input id="f-lat" type="number" step="any" value="${sp.lat??""}"></label><label>經度<input id="f-lng" type="number" step="any" value="${sp.lng??""}"></label></div></details>
  <div class="pills"><button class="pill" data-a="save">儲存</button></div></div>`)}
@@ -179,12 +279,12 @@ const archiveNow=ex=>Promise.all(visible().filter(x=>x.status==="now"&&x.id!==ex
 async function saveForm(){if(!me)return toast("請先登入");
  const v=i=>$("#f-"+i).value.trim(),id=document.querySelector(".fm").dataset.id,place=v("place"),country=v("country");
  if(!place||!country)return toast("請填寫地點與國家");
- let img=v("img");if(img&&!/^https?:\/\//i.test(img)){toast("圖片連結需以 http(s):// 開頭");img=""}
+ /* 照片改由「本機相簿檔案選擇器」上傳（FileReader → localStorage），不再使用網址輸入 */
  const old=id?TRIPS.find(x=>x.id===id):null,spots=old?[...(old.spots||[])]:[];let lat=parseFloat(v("lat")),lng=parseFloat(v("lng"));
  if(!isNaN(lat)&&!isNaN(lng)){if(spots.length&&spots[0].lat===lat&&spots[0].lng===lng){}else if(spots.length)spots[0]={...spots[0],lat,lng};else spots.push({name:place,lat,lng,day:1})}
  else if(!spots.length){toast("查詢座標中…");const g=await geo(place+", "+country);if(g)spots.push({name:place,lat:g[0],lng:g[1],day:1});else toast("找不到座標，可稍後編輯")}
  const s=v("e")&&v("s")?v("s"):v("s"),e=v("e"),nDays=s&&e?Math.max(1,Math.round((new Date(e)-new Date(s))/864e5)+1):(old?.nDays||1);
- const base={title:place,country,countryCode:FL[country]||"",startDate:s,endDate:e,image:img,notes:v("note"),nDays,spots},st=v("st");
+ const base={title:place,country,countryCode:FL[country]||"",startDate:s,endDate:e,image:old?(old.image||""):"",notes:v("note"),nDays,spots},st=v("st");
  try{if(old){await patch(old,base);if(st==="now")await archiveNow(old.id);await setSt(old,st)}
  else{if(st==="now")await archiveNow("");const ref=doc(collection(db,"trips"));await setDoc(ref,{...clean({...base,days:[],booking:[],expenses:[],currency:CUR[country]||"TWD",diets:{},ext:EXT0,owner:me.uid,members:[me.uid],memberNames:{[me.uid]:me.displayName||"我"},st:{[me.uid]:st}}),createdAt:serverTimestamp()})}
  $("#modal").classList.remove("on");toast("已儲存")}catch(err){toast("儲存失敗："+(err.code||err.message))}}
@@ -195,7 +295,7 @@ function render(){const v=visible(),by=s=>v.filter(t=>t.status===s);zm=null;
  $("#stats").innerHTML=`<div class="glass stat"><b>${new Set(real.map(t=>t.countryCode||t.country)).size}</b><small>造訪國家</small></div><div class="glass stat"><b>${real.reduce((s,t)=>s+nd(t),0)}</b><small>總天數</small></div><div class="glass stat"><b>${real.length}</b><small>趟旅行</small></div>`;
  MapView.render(v);if(cur==="map")MapView.refresh();
  const emp='<p class="empty">還沒有旅程，點上方「＋ 新增旅程」開始記錄</p>';
- $("#l-past").innerHTML=by("past").map(tcard).join("")||emp;$("#l-future").innerHTML=by("future").map(tcard).join("")||emp;renderDrawer();updBar();tick();syncLoc()}
+ $("#l-past").innerHTML=by("past").map(tcard).join("")||emp;$("#l-future").innerHTML=by("future").map(tcard).join("")||emp;stackInit();renderDrawer();updBar();tick();syncLoc()}
 function tick(){const el=$("#cd"),t=visible().find(x=>x.status==="now"&&!x.locked);if(!el||!t||!t.startDate)return;const now=new Date(),st=new Date(t.startDate+"T00:00");
  const al=t.alerts||[];if(now>=st&&!al.length){const dd=Math.floor((now-st)/864e5)+1;el.textContent=dd<=nd(t)?`旅程第 ${dd} 天`:"旅程結束";return}
  if(now<st){el.textContent=`出發倒數 ${Math.ceil((st-now)/864e5)} 天`;return}
@@ -203,6 +303,7 @@ function tick(){const el=$("#cd"),t=visible().find(x=>x.status==="now"&&!x.locke
  const ms=new Date(nx[0])-now,d=Math.floor(ms/864e5),h=Math.floor(ms%864e5/36e5),m=Math.floor(ms%36e5/6e4);el.textContent=`${nx[1]}・${d?d+"天":""}${h}時${m}分`}
 
 /* events */
+document.addEventListener("change",e=>{const f=e.target;if(!f||f.tagName!=="INPUT"||f.type!=="file"||!f.files||!f.files.length)return;const id=f.dataset.ph;if(id)addPhotos(id,f.files);f.value=""});
 document.addEventListener("click",e=>{const b=e.target.closest("[data-a],[data-t]");if(!b)return;
  const t=visible().find(x=>x.status==="now"&&!x.locked),a=b.dataset.a,v=b.dataset.v;
  if(b.dataset.t){go(b.dataset.t);return}
@@ -212,6 +313,9 @@ if(b.closest("#drawer")&&a&&a!=="menu")document.body.classList.remove("dr");
  if(a==="edit"){form(null,v);return}
  if(a==="save"){saveForm();return}
  if(a==="del"){const x=TRIPS.find(y=>y.id===v);if(x&&x.owner===me?.uid&&confirm("刪除這趟旅程？所有共編成員都會失去這份行程。"))deleteDoc(tdoc(x)).then(()=>toast("已刪除"));return}
+ if(a==="phdel"){const card=b.closest(".pc-item"),shot=card&&card.querySelector(".pc-shot"),list=photosOf(v);if(!list.length||!shot)return;
+  const i=Math.max(0,Math.min(+shot.dataset.i||0,list.length-1));list.splice(i,1);
+  if(savePhotos(v,list)){render();toast("已移除照片")}return}
  if(a==="auth"){if(!FB_OK)return toast("尚未設定 Firebase，請先填 firebase-config.js");if(me){if(confirm("要登出嗎？登出會清除這台裝置上的離線快照。"))signOut(auth).then(()=>{purgeLocal();TRIPS=[];SNAP=null;render()})}else login();return}
  if(a==="join"){if(!me)return toast("請先登入 Google 帳戶");modal('<h3>輸入邀請碼</h3><div class="fm"><label>邀請碼<input id="f-code" maxlength="8" placeholder="例如 K7M2QX" style="text-transform:uppercase"></label><div class="pills"><button class="pill" data-a="dojoin">加入行程</button></div></div>');return}
  if(a==="dojoin"){joinTrip($("#f-code").value).then(ok=>{if(ok)$("#modal").classList.remove("on")}).catch(er=>{console.error("[dojoin]",er);toast("加入失敗："+(er.code==="permission-denied"?"權限被拒":(er.code||er.message)))});return}

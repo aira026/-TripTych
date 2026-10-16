@@ -358,65 +358,64 @@ button .ix,.cb .ix,.x .ix{margin:0 auto}
 .edt .i-edit{flex:none}
 .ai-mic.on{background:rgba(var(--tp-gold),.18);color:#a8742a}
 
-/* ===== 歷史行程：明信片卡片（透光白毛玻璃 + 左右雙欄） ===== */
-#l-past{grid-template-columns:1fr;gap:16px}
+/* ===== 歷史行程：明信片卡片堆疊（鋸齒花邊 + 透光白毛玻璃） ===== */
+#l-past.stack{position:relative;height:500px;margin-top:24px}
+#l-past .empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:0 24px}
+/* 疊在一起的明信片：後面的卡片微縮並上移，露出層次邊緣 */
+.pc-item{position:absolute;top:0;left:0;width:100%;height:100%;transform-origin:top center;border-radius:8px;
+  box-shadow:0 22px 44px rgba(90,50,10,.16),0 4px 10px rgba(90,50,10,.07);
+  -webkit-user-select:none;user-select:none;touch-action:pan-y;
+  transition:transform .38s cubic-bezier(.22,.8,.25,1),opacity .3s ease}
+.pc-item.dragging{transition:none}
+.pc-item.out{opacity:0}
+/* 明信片本體：四邊鋸齒花邊遮罩 + 透光白毛玻璃 */
 .pc{
-  position:relative;
-  display:grid;
-  grid-template-columns:minmax(0,1fr) clamp(116px,27%,168px);
-  gap:0;
-  padding:18px 16px;
+  --tooth:10px;--depth:7px;
+  --stamp-img:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7' viewBox='0 0 10 7'%3E%3Cpath d='M0 7L5 0L10 7Z' fill='black'/%3E%3C/svg%3E"),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7' viewBox='0 0 10 7'%3E%3Cpath d='M0 0L5 7L10 0Z' fill='black'/%3E%3C/svg%3E"),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='7' height='10' viewBox='0 0 7 10'%3E%3Cpath d='M7 0L0 5L7 10Z' fill='black'/%3E%3C/svg%3E"),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='7' height='10' viewBox='0 0 7 10'%3E%3Cpath d='M0 0L7 5L0 10Z' fill='black'/%3E%3C/svg%3E"),linear-gradient(#000,#000);
+  --stamp-pos:left top,left bottom,left top,right top,center;
+  --stamp-size:var(--tooth) var(--depth),var(--tooth) var(--depth),var(--depth) var(--tooth),var(--depth) var(--tooth),calc(100% - var(--depth) - var(--depth)) calc(100% - var(--depth) - var(--depth));
+  --stamp-rep:repeat-x,repeat-x,repeat-y,repeat-y,no-repeat;
+  height:100%;display:grid;grid-template-columns:minmax(0,1fr) clamp(150px,30%,215px);gap:0;
+  padding:24px 22px;border:1px solid rgba(255,255,255,.6);border-radius:6px;
   background:rgba(255,255,255,.45);
-  -webkit-backdrop-filter:blur(12px);
-  backdrop-filter:blur(12px);
-  border:1px solid rgba(255,255,255,.6);
-  border-radius:24px;
-  box-shadow:0 18px 36px rgba(90,50,10,.09),0 2px 6px rgba(90,50,10,.05);
-  transition:transform .18s ease,box-shadow .18s ease;
+  -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
+  -webkit-mask-image:var(--stamp-img);mask-image:var(--stamp-img);
+  -webkit-mask-position:var(--stamp-pos);mask-position:var(--stamp-pos);
+  -webkit-mask-size:var(--stamp-size);mask-size:var(--stamp-size);
+  -webkit-mask-repeat:var(--stamp-rep);mask-repeat:var(--stamp-rep);
 }
-.pc:hover{transform:translateY(-2px);box-shadow:0 22px 44px rgba(90,50,10,.12),0 2px 6px rgba(90,50,10,.06)}
-/* 左欄 */
-.pc-l{display:flex;flex-direction:column;min-width:0;padding-right:16px}
-.pc-l h3{font-size:1.12rem;font-weight:500;color:var(--ink);line-height:1.4;letter-spacing:.01em}
-.pc-meta{margin-top:6px;font-size:.83rem;color:var(--mut)}
-.pc-mates{margin-top:3px;font-size:.83rem;color:var(--mut)}
-.pc-note{margin-top:11px;padding:9px 13px 11px;border-radius:16px;background:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.65)}
-.pc-note em{display:block;font-style:normal;font-size:.68rem;letter-spacing:.2em;color:var(--mut);text-transform:uppercase}
-.pc-note p{margin-top:4px;font-size:.88rem;line-height:1.65;color:var(--tx);white-space:pre-wrap;overflow-wrap:anywhere}
-.pc-act{margin-top:auto;padding-top:13px}
-.pc-act .pill{min-height:38px;padding:0 15px;font-size:.8rem}
-/* 右欄：照片方框（中線虛線模擬明信片分隔） */
-.pc-r{display:flex;padding-left:16px;border-left:1px dashed rgba(22,24,29,.14)}
-.pc-photo{
-  position:relative;
-  flex:1;
-  min-height:150px;
-  margin:0;
-  padding:7px;
-  border-radius:18px;
-  background:rgba(255,255,255,.55);
-  border:1px solid rgba(255,255,255,.8);
-  box-shadow:0 6px 16px rgba(90,50,10,.08);
-  overflow:hidden;
-}
-.pc-blank{
-  position:absolute;inset:7px;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
-  border-radius:12px;
-  background:linear-gradient(135deg,rgba(255,154,158,.26),rgba(254,207,239,.34));
-  border:1px dashed rgba(22,24,29,.14);
-}
-.pc-blank b{font-size:1.7rem;font-weight:400;line-height:1}
-.pc-blank small{font-size:.68rem;letter-spacing:.14em;color:var(--mut)}
-.pc-photo img{
-  position:absolute;inset:7px;
-  width:calc(100% - 14px);height:calc(100% - 14px);
-  object-fit:cover;border-radius:12px;
-}
+/* 左欄：行程名稱 / 簡介（國家・日期・同行者）/ 心情札記 / 編輯按鈕 */
+.pc-l{display:flex;flex-direction:column;min-width:0;padding-right:20px}
+.pc-l h3{font-size:1.16rem;font-weight:500;color:var(--ink);line-height:1.4;letter-spacing:.01em}
+.pc-meta{margin-top:7px;font-size:.84rem;color:var(--mut)}
+.pc-mates{margin-top:3px;font-size:.84rem;color:var(--mut)}
+.pc-note{margin-top:14px;padding:11px 14px 13px;border-radius:16px;background:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.65);min-height:0;overflow:hidden}
+.pc-note em{display:block;font-style:normal;font-size:.68rem;letter-spacing:.2em;color:var(--mut)}
+.pc-note p{margin-top:5px;font-size:.9rem;line-height:1.7;color:var(--tx);white-space:pre-wrap;overflow-wrap:anywhere}
+.pc-act{margin-top:auto;padding-top:16px}
+.pc-act .pill{min-height:40px;padding:0 16px;font-size:.82rem}
+/* 右欄：3:4 直式照片框（左右滑動切換）+ 本機相簿上傳 */
+.pc-r{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;min-width:0;padding-left:20px;border-left:1px dashed rgba(22,24,29,.16)}
+.pc-shot{position:relative;width:100%;aspect-ratio:3/4;max-height:calc(100% - 100px);border-radius:16px;overflow:hidden;background:rgba(255,255,255,.55);border:1px solid rgba(255,255,255,.85);box-shadow:0 10px 22px rgba(90,50,10,.12);touch-action:pan-y;cursor:grab}
+.pc-strip{display:flex;width:100%;height:100%;transition:transform .34s cubic-bezier(.22,.8,.25,1)}
+.pc-slide{flex:0 0 100%;height:100%}
+.pc-slide img{display:block;width:100%;height:100%;object-fit:cover}
+.pc-blank{position:absolute;inset:0;display:grid;place-items:center;padding:0 8px;background:linear-gradient(135deg,rgba(255,154,158,.22),rgba(254,207,239,.30));color:var(--mut);font-size:.8rem;letter-spacing:.18em;text-align:center}
+.pc-dots{position:absolute;left:0;right:0;bottom:9px;display:flex;justify-content:center;gap:6px}
+.pc-dots i{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.6);box-shadow:0 0 0 1px rgba(0,0,0,.14);cursor:pointer}
+.pc-dots i.on{background:#fff;transform:scale(1.25)}
+.pc-x{position:absolute;top:7px;right:7px;width:28px;height:28px;display:grid;place-items:center;padding:0;border:0;border-radius:50%;background:rgba(255,255,255,.88);color:#3a322b;cursor:pointer;box-shadow:0 3px 8px rgba(0,0,0,.16)}
+.pc-up{position:relative;display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:0 16px;border-radius:50px;background:rgba(255,255,255,.72);border:1px solid rgba(255,255,255,.85);color:var(--ink);font-size:.8rem;font-weight:600;cursor:pointer;box-shadow:0 6px 14px rgba(90,50,10,.10)}
+.pc-file{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
+.pc-hint{font-size:.7rem;letter-spacing:.1em;color:var(--mut)}
+.fm .pc-up{margin-top:6px}
+.fm label .meta{display:block;margin-top:5px}
 @media(max-width:430px){
-  .pc{grid-template-columns:minmax(0,1fr) clamp(104px,30%,132px);padding:15px 13px}
-  .pc-l{padding-right:13px}
-  .pc-r{padding-left:13px}
-  .pc-photo{min-height:132px}
+  #l-past.stack{height:470px}
+  .pc{grid-template-columns:minmax(0,1fr) clamp(120px,34%,152px);padding:18px 15px}
+  .pc-l{padding-right:14px}
+  .pc-r{padding-left:14px;gap:9px}
+  .pc-note{margin-top:11px;padding:9px 12px 11px}
   .pc-act .pill{min-height:36px;padding:0 13px;font-size:.76rem}
+  .pc-up{min-height:34px;padding:0 13px;font-size:.76rem}
 }
