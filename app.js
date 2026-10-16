@@ -269,14 +269,14 @@ function closeFocus(){if(!FOCUS)return;const id=FOCUS.id;FOCUS=null;
     card.style.willChange="transform";
     card.style.transition="transform 0.35s cubic-bezier(0.25,1,0.5,1)";
     card.style.transform=`translate3d(${(f.left-g.left)/k}px,${(f.top-g.top)/k}px,${-D}px) scale(${(f.width/g.width/k).toFixed(4)},${(f.height/g.height/k).toFixed(4)})`
- setTimeout(()=>{if(!FOCUS&&over&&stage){over.hidden=true;over.classList.remove("closing");stage.innerHTML=""}},350)}}
+ setTimeout(()=>{if(!FOCUS&&over&&stage){over.hidden=true;over.classList.remove("closing");stage.innerHTML=""}},350)}}}
 function repaintFocus(){if(!FOCUS)return;
  const over=$("#pc-over"),stage=$("#pc-stage");if(!over||!stage)return;
  const t=visible().find(x=>x.id===FOCUS.id);
  if(!t){FOCUS=null;over.hidden=true;over.classList.remove("closing");stage.innerHTML="";
   $("#l-past").classList.remove("focused");document.body.classList.remove("pcopen");return}
  stage.innerHTML=focusHTML(t);
- bindStage(stage)}}
+ bindStage(stage)}
 
 /* add / edit */
 function form(st,id){const t0=TRIPS.find(x=>x.id===id),t=t0?{...t0,status:statusOf(t0)}:{status:st,spots:[]},sp=t.spots?.[0]||{};
