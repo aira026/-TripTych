@@ -365,7 +365,7 @@ button .ix,.cb .ix,.x .ix{margin:0 auto}
 .pc-item{position:absolute;top:0;left:0;width:100%;height:100%;transform-origin:top center;cursor:pointer;isolation:isolate;
   box-shadow:0 18px 36px rgba(90,50,10,.16),0 3px 8px rgba(90,50,10,.07);
   -webkit-user-select:none;user-select:none;touch-action:pan-y;
-  transition:transform .42s cubic-bezier(.22,.8,.25,1),opacity .32s ease}
+  transition:transform .35s cubic-bezier(.23,1,.32,1),opacity .28s ease}
 .pc-item.dragging{transition:none}
 .pc-item.out{opacity:0}
 #l-past .pc-item:hover{box-shadow:0 26px 50px rgba(90,50,10,.2),0 4px 10px rgba(90,50,10,.08)}
@@ -379,7 +379,7 @@ button .ix,.cb .ix,.x .ix{margin:0 auto}
   --stamp-size:var(--tooth) var(--depth),var(--tooth) var(--depth),var(--depth) var(--tooth),var(--depth) var(--tooth),calc(100% - var(--depth) - var(--depth)) calc(100% - var(--depth) - var(--depth));
   --stamp-rep:repeat-x,repeat-x,repeat-y,repeat-y,no-repeat;
   overflow:hidden;display:flex;flex-direction:column;
-  background:#fff; /* 純白不透明：底層／背面其他卡片的文字絕對不會透出 */
+  background:#ffffff; /* 純白不透明：底層／背面其他卡片的文字絕對不會透出 */
   -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
   -webkit-mask-image:var(--stamp-img);mask-image:var(--stamp-img);
   -webkit-mask-position:var(--stamp-pos);mask-position:var(--stamp-pos);
@@ -394,6 +394,16 @@ button .ix,.cb .ix,.x .ix{margin:0 auto}
 .pc-note{margin-top:16px;min-height:0;overflow:hidden} /* 心情札記：純文字，移除多餘淡色方框 */
 .pc-note em{display:block;font-style:normal;font-size:.68rem;letter-spacing:.2em;color:var(--mut)}
 .pc-note p{margin-top:7px;font-size:.94rem;line-height:1.75;color:var(--tx);white-space:pre-wrap;overflow-wrap:anywhere}
+/* 照片網址預覽區（單張，位於心情札記下方） */
+.pc-photo{margin-top:16px}
+.pc-photo label{display:block;font-size:.78rem;letter-spacing:.1em;color:var(--mut);margin-bottom:6px}
+.pc-photo .pc-url{width:100%;padding:10px 14px;border:1px solid rgba(255,255,255,.5);border-radius:12px;background:rgba(255,255,255,.9);font:inherit;font-size:.86rem;box-sizing:border-box}
+.pc-photo .pc-url::placeholder{color:var(--mut)}
+.pc-photo .pc-preview{width:100%;height:auto;max-height:220px;object-fit:cover;border-radius:12px;margin-top:10px;display:block}
+#l-past .pc-photo{margin-top:20px}
+#l-past .pc-photo .pc-preview{max-height:260px}
+.pc-big .pc-photo{margin-top:26px}
+.pc-big .pc-photo .pc-preview{max-height:320px}
 .pc-act{margin-top:auto;padding-top:16px}
 .pc-act .pill{min-height:38px;padding:0 15px;font-size:.8rem}
 /* 堆疊卡片（滿幅）：完整資訊與操作鈕，內容不截斷 */
@@ -405,23 +415,6 @@ button .ix,.cb .ix,.x .ix{margin:0 auto}
 #l-past .pc-note p{font-size:.96rem;line-height:1.75;max-height:none;overflow:visible}
 #l-past .pc-act{padding-top:18px}
 #l-past .pc-act .pill{min-height:42px;padding:0 17px;font-size:.84rem}
-/* 背面：照片藝廊頁（1:1 方形、object-fit:contain 直橫式都不變形） */
-.pc-back{padding:20px}
-.pc-back-in{display:flex;gap:18px;align-items:center;flex:1;min-height:0}
-.pc-back-side{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;flex:none;width:152px}
-.pc-flipback{min-height:38px;padding:0 16px;border:1px solid rgba(255,255,255,.8);border-radius:50px;background:rgba(255,255,255,.72);color:var(--ink);font:inherit;font-size:.8rem;font-weight:600;cursor:pointer;box-shadow:0 6px 14px rgba(90,50,10,.1)}
-.pc-shot{position:relative;aspect-ratio:1/1;flex:1 1 auto;min-width:0;max-width:100%;max-height:100%;border-radius:18px;overflow:hidden;background:rgba(255,255,255,.55);border:1px solid rgba(255,255,255,.85);box-shadow:0 10px 24px rgba(90,50,10,.12);touch-action:pan-y;cursor:grab}
-.pc-strip{display:flex;width:100%;height:100%;transition:transform .34s cubic-bezier(.22,.8,.25,1)}
-.pc-slide{flex:0 0 100%;height:100%;background:linear-gradient(160deg,rgba(255,244,236,.95),rgba(255,230,241,.9))}
-.pc-slide img{display:block;width:100%;height:100%;object-fit:contain}
-.pc-blank{position:absolute;inset:0;display:grid;place-items:center;padding:0 8px;background:linear-gradient(135deg,rgba(255,154,158,.22),rgba(254,207,239,.30));color:var(--mut);font-size:.82rem;letter-spacing:.18em;text-align:center}
-.pc-dots{position:absolute;left:0;right:0;bottom:9px;display:flex;justify-content:center;gap:6px}
-.pc-dots i{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.6);box-shadow:0 0 0 1px rgba(0,0,0,.14);cursor:pointer}
-.pc-dots i.on{background:#fff;transform:scale(1.25)}
-.pc-x{position:absolute;top:7px;right:7px;width:28px;height:28px;display:grid;place-items:center;padding:0;border:0;border-radius:50%;background:rgba(255,255,255,.88);color:#3a322b;cursor:pointer;box-shadow:0 3px 8px rgba(0,0,0,.16)}
-.pc-up{position:relative;display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:0 16px;border-radius:50px;background:rgba(255,255,255,.72);border:1px solid rgba(255,255,255,.85);color:var(--ink);font-size:.8rem;font-weight:600;cursor:pointer;box-shadow:0 6px 14px rgba(90,50,10,.1)}
-.pc-file{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
-.pc-hint{font-size:.72rem;letter-spacing:.1em;color:var(--mut)}
 .fm .pc-up{margin-top:6px}
 .fm label .meta{display:block;margin-top:5px}
 
@@ -433,45 +426,23 @@ button .ix,.cb .ix,.x .ix{margin:0 auto}
 .pc-over.closing .pc-scrim{opacity:0}
 .pc-stage{position:relative;width:100%;height:100%;display:flex;align-items:center;justify-content:center;padding:16px;perspective:1400px}
 .pc-big{position:relative;width:min(720px,calc(100vw - 28px));height:min(560px,calc(100vh - 150px));min-height:0;border-radius:10px;transform:none;cursor:default;perspective:1600px;transition:transform .5s cubic-bezier(.2,.72,.2,1),opacity .3s ease}
-.pc-flip{position:absolute;inset:0;transform-style:preserve-3d;transition:transform .7s cubic-bezier(.35,.1,.25,1)}
-.pc-big.flip>.pc-flip{transform:rotateY(180deg)}
-/* 翻頁提示（Peek）：放大到中央後先往後掀一下再彈回 */
-.pc-flip.peek{animation:pcPeek .9s cubic-bezier(.35,.1,.25,1)}
-@keyframes pcPeek{0%{transform:rotateY(0deg)}30%{transform:rotateY(-22deg)}55%{transform:rotateY(-12deg)}78%{transform:rotateY(-4deg)}100%{transform:rotateY(0deg)}}
-.pc-big>.pc-flip>.pc-face{position:absolute;inset:0;min-height:0;-webkit-backface-visibility:hidden;backface-visibility:hidden}
-.pc-big>.pc-flip>.pc-back{transform:rotateY(180deg)}
-.pc-big .pc-front{padding:32px 32px 28px}
-.pc-big .pc-front h3{font-size:1.55rem;font-weight:400;padding-right:44px}
-.pc-big .pc-meta,.pc-big .pc-mates{font-size:.94rem}
 .pc-big .pc-note{margin-top:26px}
 .pc-big .pc-note p{font-size:1.02rem;line-height:1.8}
-.pc-big .pc-act{padding-top:22px;padding-right:210px}
+.pc-big .pc-act{padding-top:22px}
 .pc-big .pc-act .pill{min-height:44px;padding:0 19px;font-size:.88rem}
-.pc-fliphint{position:absolute;right:20px;bottom:18px;display:inline-flex;align-items:center;gap:6px;min-height:34px;padding:0 14px;border:1px solid rgba(255,255,255,.85);border-radius:50px;background:rgba(255,255,255,.72);color:var(--mut);font-size:.76rem;cursor:pointer;box-shadow:0 6px 14px rgba(90,50,10,.1)}
-.pc-fliphint:hover{color:var(--ink)}
-#l-past .pc-fliphint{display:none}
 body.pcopen{overflow:hidden}
 
 /* ===== 「新增旅程」：底部懸浮的透光白色玻璃按鈕 ===== */
-#t-past .addfab{justify-content:center;position:sticky;bottom:16px;z-index:70;margin:20px 0 4px;pointer-events:none}
-#t-past .addfab .pill{pointer-events:auto;min-height:50px;padding:0 26px;font-size:.92rem;background:rgba(255,255,255,.6);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.8);color:var(--ink);box-shadow:0 14px 30px rgba(90,50,10,.16),0 2px 6px rgba(90,50,10,.06)}
-
 @media(max-width:560px){
   #l-past{height:430px;margin-top:30px}
   #l-past .pc-front{padding:20px 18px 18px}
   #l-past .pc-front h3{font-size:1.12rem}
   #l-past .pc-note{margin-top:14px}
   #l-past .pc-act .pill{min-height:38px;padding:0 14px;font-size:.78rem}
-  .pc-fliphint{top:12px;right:12px;bottom:auto}
   .pc-big .pc-front h3{padding-right:126px}
   .pc-big .pc-act{padding-right:0}
   .pc-big{width:calc(100vw - 20px);height:min(540px,calc(100vh - 132px))}
   .pc-big .pc-front{padding:24px 20px 20px}
   .pc-big .pc-front h3{font-size:1.26rem}
   .pc-big .pc-note{margin-top:18px}
-  .pc-back{padding:16px}
-  .pc-back-in{flex-direction:column;gap:12px}
-  .pc-shot{flex:none;width:min(100%,42vh);max-height:none}
-  .pc-back-side{width:100%;flex-direction:row;flex-wrap:wrap;gap:10px}
-  #t-past .addfab .pill{min-height:46px;padding:0 22px}
 }

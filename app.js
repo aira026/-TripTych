@@ -179,52 +179,17 @@ function pcFront(t,big){const{dateTxt,mateTxt}=pcMeta(t);
   <p class="pc-mates">同行：${esc(mateTxt)}</p>
   <div class="pc-note"><em>心情札記</em><p>${t.notes?esc(t.notes):"還沒有寫下這趟旅程的心情札記…"}</p></div>
   <div class="pills pc-act">${me?`<button class="pill" data-a="edit" data-v="${esc(t.id)}"><i class=i-edit></i> 編輯</button>`:""}${t.spots?.length?`<a class="pill gl" href="https://maps.google.com/?q=${t.spots[0].lat},${t.spots[0].lng}" target="_blank" rel="noopener">地圖</a>`:""}${t.status==="past"?`<button class="pill gl" data-a="setcur" data-v="${esc(t.id)}">設為當前行程</button>`:""}${t.owner===me?.uid?`<button class="pill gl" data-a="del" data-v="${esc(t.id)}"><svg class="ix" viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg> 刪除</button>`:""}</div>
-  ${big?`<button class="pc-fliphint" data-a="pflip" type="button">滑動或點擊翻面看照片 🔄</button>`:""}`}
-function pcBack(t){const P=photosOf(t.id),n=P.length;
- const strip=P.map((src,i)=>`<div class="pc-slide"><img src="${src}" alt="${esc(t.title)} 照片 ${i+1}" loading="lazy"></div>`).join("");
- const dots=n>1?`<div class="pc-dots">${P.map((_,i)=>`<i class="${i?"":"on"}" data-i="${i}"></i>`).join("")}</div>`:"";
- return`<div class="pc-back-in">
-   <div class="pc-shot" data-i="0">
-    <div class="pc-strip">${strip}</div>
-    ${n?"":'<div class="pc-blank"><span>照片待補</span></div>'}
-    ${dots}
-    ${n?`<button class="pc-x" data-a="phdel" data-v="${esc(t.id)}" aria-label="移除這張照片"><svg class="ix" viewBox="0 0 24 24" width="13" height="13" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>`:""}
-   </div>
-   <div class="pc-back-side">
-    <label class="pc-up">＋ 上傳照片<input class="pc-file" type="file" accept="image/*" multiple data-ph="${esc(t.id)}"></label>
-    <small class="pc-hint">${n}/${PH_MAX}</small>
-    <button class="pc-flipback" data-a="pflip" type="button">翻回正面 ↺</button>
-   </div>
+  <div class="pc-photo">
+   <label>照片網址<input type="text" class="pc-url" data-pid="${esc(t.id)}" placeholder="貼上圖片網址（如 Google 雲端公開圖片連結）" value="${esc(t.image||"")}"></label>
+   ${t.image?`<img src="${esc(t.image)}" alt="${esc(t.title)} 照片" class="pc-preview" loading="lazy" onerror="this.style.display='none'">`:""}
   </div>`}
 /* 總覽：縮小版明信片（只放正面文字頁） */
 function pcard(t){return`<article class="pc-item" data-pid="${esc(t.id)}"><div class="pc-face pc-front">${pcFront(t,false)}</div></article>`}
 /* 聚焦：滿幅明信片（正面 + 背面，可 3D 翻面） */
 function focusHTML(t){return`<article class="pc-item pc-big" data-pid="${esc(t.id)}">
-  <div class="pc-flip">
-   <div class="pc-face pc-front">${pcFront(t,true)}</div>
-   <div class="pc-face pc-back">${pcBack(t)}</div>
-  </div>
+  <div class="pc-face pc-front">${pcFront(t,true)}</div>
  </article>`}
 
-/* 照片藝廊：左右滑動／點擊切換（總覽與聚焦共用） */
-function bindShot(item){const shot=item.querySelector(".pc-shot");if(!shot||shot._b)return;shot._b=1;
- const strip=shot.querySelector(".pc-strip");const n=strip?strip.children.length:0;if(!n)return;
- let x0=null,moved=false,idx=0;
- const set=i=>{idx=Math.max(0,Math.min(n-1,i));shot.dataset.i=idx;strip.style.transition="";strip.style.transform=`translateX(${-idx*100}%)`;
-  shot.querySelectorAll(".pc-dots i").forEach((d,k)=>d.classList.toggle("on",k===idx))};
- shot.addEventListener("pointerdown",e=>{if(e.target.closest(".pc-x,.pc-dots"))return;x0=e.clientX;moved=false});
- shot.addEventListener("pointermove",e=>{if(x0==null)return;const d=e.clientX-x0;
-  if(Math.abs(d)>6)moved=true;
-  if(moved){strip.style.transition="none";strip.style.transform=`translateX(calc(${-idx*100}% + ${d}px))`}});
- const up=e=>{if(x0==null)return;const d=e.clientX==null?0:e.clientX-x0;x0=null;
-  if(!moved){set(idx+1>=n?0:idx+1);return}
-  if(d<=-40)set(idx+1);else if(d>=40)set(idx-1);else set(idx)};
- shot.addEventListener("pointerup",up);
- shot.addEventListener("pointercancel",()=>{if(x0==null)return;x0=null;set(idx)});
- const dots=shot.querySelector(".pc-dots");
- if(dots)dots.addEventListener("click",e=>{const i=e.target&&e.target.dataset?e.target.dataset.i:null;if(i!=null)set(+i)})}
-
-/* ===== 重疊明信片堆疊（Card Stack）：上下微幅交錯、左右滑動切換並循環 ===== */
 let FOCUS=null;
 function stackInit(){const box=$("#l-past");if(!box)return;
  const items=[...box.querySelectorAll(".pc-item")];
@@ -273,39 +238,16 @@ function bindStack(el){if(el._sc)return;el._sc=1;
 let __rlt=null;
 addEventListener("resize",()=>{clearTimeout(__rlt);__rlt=setTimeout(()=>stackLayout(),160)});
 /* 聚焦互動：卡片上左右滑動／輕點 → 翻面；點卡片以外的背景 → 返回散落 */
-function bindStage(stage){bindShot(stage);if(stage._sc)return;stage._sc=1;
- const CTL=".pc-shot,.pc-dots,.pc-x,button,a,input,label,select,textarea";
- let x0=null,moved=false,card=null,bg=false;
- const down=e=>{if(e.target.closest(CTL)){x0=null;return}
-  x0=e.clientX;moved=false;card=e.target.closest(".pc-item");bg=!card;
-  if(card)card.classList.add("dragging")};
- const move=e=>{if(x0==null)return;const dx=e.clientX-x0;
-  if(Math.abs(dx)>10)moved=true;
-  if(moved&&card)card.style.transform=`translateX(${(dx*.3).toFixed(1)}px)`};
- const up=e=>{if(x0==null)return;
-  const dx=e.clientX==null?0:e.clientX-x0,tap=!moved,isBg=bg,c=card;
-  x0=null;bg=false;card=null;
-  if(c){c.classList.remove("dragging");c.style.transform=""}
-  if(isBg){if(tap)closeFocus();return}                 /* 點背景 → 退回散落 */
-  const fl=stage.querySelector(".pc-flip");if(!fl)return;
-  if(Math.abs(dx)>=60){const back=dx<0;                /* 左滑 → 翻到背面，右滑 → 翻回正面 */
-   if(back&&!fl.classList.contains("flip"))flipStage();
-   else if(!back&&fl.classList.contains("flip"))flipStage();return}
-  if(tap)flipStage()};                                 /* 輕點卡片 → 翻面 */
- stage.addEventListener("pointerdown",down);
- stage.addEventListener("pointermove",move);
- stage.addEventListener("pointerup",up);
- stage.addEventListener("pointercancel",()=>{if(card){card.classList.remove("dragging");card.style.transform=""}x0=null;card=null});
- document.addEventListener("pointerup",up);            /* 手指滑出卡片外也要收尾 */
- document.addEventListener("pointercancel",()=>{if(card){card.classList.remove("dragging");card.style.transform=""}x0=null;card=null})}
-function flipStage(){const fl=$("#pc-stage .pc-flip");if(!fl)return;fl.classList.remove("peek");fl.classList.toggle("flip");if(FOCUS)FOCUS.flip=fl.classList.contains("flip")}
-/* 翻頁提示：放大到中央後先往後 peek 一下再彈回 */
-function peekFlip(){const fl=$("#pc-stage .pc-flip");if(!fl)return;fl.classList.remove("peek");void fl.offsetWidth;fl.classList.add("peek");
- setTimeout(()=>{const f=$("#pc-stage .pc-flip");if(f)f.classList.remove("peek")},1000)}
+/* 聚焦互動：點卡片以外的背景 → 返回散落 */
+function bindStage(stage){if(stage._sc)return;stage._sc=1;
+ const CTL="button,a,input,label,select,textarea,.pc-url";
+ stage.addEventListener("pointerdown",e=>{if(e.target.closest(CTL))return;
+  const card=e.target.closest(".pc-item");if(!card&&e.target===stage)stage._bg=1});
+ stage.addEventListener("pointerup",e=>{if(stage._bg){delete stage._bg;closeFocus();}});
+}
 function openFocus(id){if(!id)return;const t=visible().find(x=>x.id===id);if(!t)return;
  const src=document.querySelector('#l-past .pc-item[data-pid="'+id+'"]'),over=$("#pc-over"),stage=$("#pc-stage");
- if(!over||!stage)return;
- FOCUS={id,flip:false};
+ FOCUS={id};
  stage.innerHTML=focusHTML(t);over.hidden=false;over.classList.remove("closing");
  $("#l-past").classList.add("focused");document.body.classList.add("pcopen");
  bindStage(stage);
@@ -316,7 +258,6 @@ function openFocus(id){if(!id)return;const t=visible().find(x=>x.id===id);if(!t)
    card.style.transition="none";
    card.style.transform=`translate3d(${((f.left-g.left)/k).toFixed(1)}px,${((f.top-g.top)/k).toFixed(1)}px,${-D}px) scale(${(f.width/g.width/k).toFixed(4)},${(f.height/g.height/k).toFixed(4)})`;
    requestAnimationFrame(()=>requestAnimationFrame(()=>{card.style.transition="";card.style.transform=""}))}}
- setTimeout(peekFlip,520)}
 function closeFocus(){if(!FOCUS)return;const id=FOCUS.id;FOCUS=null;
  const over=$("#pc-over"),stage=$("#pc-stage"),card=stage&&stage.querySelector(".pc-item");
  $("#l-past").classList.remove("focused");document.body.classList.remove("pcopen");
@@ -333,9 +274,7 @@ function repaintFocus(){if(!FOCUS)return;
  const t=visible().find(x=>x.id===FOCUS.id);
  if(!t){FOCUS=null;over.hidden=true;over.classList.remove("closing");stage.innerHTML="";
   $("#l-past").classList.remove("focused");document.body.classList.remove("pcopen");return}
- const was=!!stage.querySelector(".pc-flip.flip");
  stage.innerHTML=focusHTML(t);
- const fl=stage.querySelector(".pc-flip");if(was&&fl)fl.classList.add("flip");
  bindStage(stage)}
 
 /* add / edit */
@@ -380,6 +319,9 @@ function tick(){const el=$("#cd"),t=visible().find(x=>x.status==="now"&&!x.locke
 
 /* events */
 document.addEventListener("change",e=>{const f=e.target;if(!f||f.tagName!=="INPUT"||f.type!=="file"||!f.files||!f.files.length)return;const id=f.dataset.ph;if(id)addPhotos(id,f.files);f.value=""});
+/* 照片網址輸入：即時預覽 + 持續儲存 */
+document.addEventListener("input",e=>{const f=e.target;if(!f||!f.classList.contains("pc-url"))return;const pid=f.dataset.pid;const v=f.value.trim();const t=TRIPS.find(x=>x.id===pid);if(!t)return;const img=f.parentNode.querySelector("img.pc-preview");if(v){if(!img){const ni=document.createElement("img");ni.className="pc-preview";ni.loading="lazy";ni.onerror=function(){this.style.display="none"};ni.src=v;f.parentNode.appendChild(ni)}else{img.src=v;img.style.display="";}}else if(img){img.remove()}});
+document.addEventListener("change",e=>{const f=e.target;if(!f||!f.classList.contains("pc-url"))return;const pid=f.dataset.pid;const v=f.value.trim();const t=TRIPS.find(x=>x.id===pid);if(!t)return;if(me&&t.image!==v){patch(t,{image:v})}else{t.image=v}});
 document.addEventListener("keydown",e=>{if((e.key==="Escape"||e.key==="Esc")&&FOCUS)closeFocus()});
 document.addEventListener("click",e=>{const b=e.target.closest("[data-a],[data-t]");if(!b)return;
  const t=visible().find(x=>x.status==="now"&&!x.locked),a=b.dataset.a,v=b.dataset.v;
@@ -394,7 +336,6 @@ if(b.closest("#drawer")&&a&&a!=="menu")document.body.classList.remove("dr");
   const i=Math.max(0,Math.min(+shot.dataset.i||0,list.length-1));list.splice(i,1);
   if(savePhotos(v,list)){render();toast("已移除照片")}return}
  if(a==="pclose"){closeFocus();return}
- if(a==="pflip"){flipStage();return}
  if(a==="auth"){if(!FB_OK)return toast("尚未設定 Firebase，請先填 firebase-config.js");if(me){if(confirm("要登出嗎？登出會清除這台裝置上的離線快照。"))signOut(auth).then(()=>{purgeLocal();TRIPS=[];SNAP=null;render()})}else login();return}
  if(a==="join"){if(!me)return toast("請先登入 Google 帳戶");modal('<h3>輸入邀請碼</h3><div class="fm"><label>邀請碼<input id="f-code" maxlength="8" placeholder="例如 K7M2QX" style="text-transform:uppercase"></label><div class="pills"><button class="pill" data-a="dojoin">加入行程</button></div></div>');return}
  if(a==="dojoin"){joinTrip($("#f-code").value).then(ok=>{if(ok)$("#modal").classList.remove("on")}).catch(er=>{console.error("[dojoin]",er);toast("加入失敗："+(er.code==="permission-denied"?"權限被拒":(er.code||er.message)))});return}
