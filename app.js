@@ -251,10 +251,12 @@ function openFocus(id){if(!id)return;const t=visible().find(x=>x.id===id);if(!t)
  const card=stage.querySelector(".pc-item");
  if(src&&card){const f=src.getBoundingClientRect(),g=card.getBoundingClientRect();
   if(g.width&&g.height){
-   const P=1400,D=220,k=P/(P+D);                      /* 先退到 Z 軸後方，再往前推進放大 */
-   card.style.transition="none";
-   card.style.transform=`translate3d(${((f.left-g.left)/k).toFixed(1)}px,${((f.top-g.top)/k).toFixed(1)}px,${-D}px) scale(${(f.width/g.width/k).toFixed(4)},${(f.height/g.height/k).toFixed(4)})`;
-   requestAnimationFrame(()=>requestAnimationFrame(()=>{card.style.transition="";card.style.transform=""}))}}}
+   const P=1400,D=220,k=P/(P+D);                      /* GPU 硬體加速：從源位置平滑放大到聚焦位置 */
+   card.style.willChange="transform";
+   card.style.transition="transform 0.35s cubic-bezier(0.25,1,0.5,1)";
+   card.style.transform=`translate3d(${(f.left-g.left)/k}px,${(f.top-g.top)/k}px,${-D}px) scale(${(f.width/g.width/k).toFixed(4)},${(f.height/g.height/k).toFixed(4)})`;
+   card.offsetHeight;
+   card.style.transform=""
 function closeFocus(){if(!FOCUS)return;const id=FOCUS.id;FOCUS=null;
  const over=$("#pc-over"),stage=$("#pc-stage"),card=stage&&stage.querySelector(".pc-item");
  $("#l-past").classList.remove("focused");document.body.classList.remove("pcopen");
@@ -262,10 +264,11 @@ function closeFocus(){if(!FOCUS)return;const id=FOCUS.id;FOCUS=null;
  const tgt=document.querySelector('#l-past .pc-item[data-pid="'+id+'"]');
  if(card&&tgt){const f=tgt.getBoundingClientRect(),g=card.getBoundingClientRect();
   if(g.width&&g.height){
-   const P=1400,D=220,k=P/(P+D);
-   card.style.transition="";                            /* 反向：縮小並退回散落座標 */
-   card.style.transform=`translate3d(${((f.left-g.left)/k).toFixed(1)}px,${((f.top-g.top)/k).toFixed(1)}px,${-D}px) scale(${(f.width/g.width/k).toFixed(4)},${(f.height/g.height/k).toFixed(4)})`}}
- setTimeout(()=>{if(!FOCUS&&over&&stage){over.hidden=true;over.classList.remove("closing");stage.innerHTML=""}},560)}
+    const P=1400,D=220,k=P/(P+D);
+    card.style.willChange="transform";
+    card.style.transition="transform 0.35s cubic-bezier(0.25,1,0.5,1)";
+    card.style.transform=`translate3d(${(f.left-g.left)/k}px,${(f.top-g.top)/k}px,${-D}px) scale(${(f.width/g.width/k).toFixed(4)},${(f.height/g.height/k).toFixed(4)})`
+ setTimeout(()=>{if(!FOCUS&&over&&stage){over.hidden=true;over.classList.remove("closing");stage.innerHTML=""}},350)}
 function repaintFocus(){if(!FOCUS)return;
  const over=$("#pc-over"),stage=$("#pc-stage");if(!over||!stage)return;
  const t=visible().find(x=>x.id===FOCUS.id);
