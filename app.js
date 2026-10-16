@@ -376,7 +376,7 @@ if(b.closest("#drawer")&&a&&a!=="menu")document.body.classList.remove("dr");
  if(a==="cpfood"){const X=((FOOD&&FOOD.cards[FLANG])||[]).map(l=>l.p).join("\n");X?copy(X,"已複製文案"):toast("沒有可複製的文案");return}
  if(a==="focus"){focusCard();return}
  if(a==="fclang"){FLANG=v;store("tp-flang",v);focusCard();return}
- if(a==="fclose"){closeFocus();return}
+ if(a==="fclose"){closeFoodCard();return}
  if(a==="editdiet"&&t){dietForm(v);return}
  if(a==="savediet"&&t){saveDiet(t);return}
  if(a==="goyen"){go("yen");return}
@@ -500,7 +500,7 @@ function focusCard(){const k=FLANG==="zh"?"ja":FLANG;let el=$("#focus");if(!el){
  const ls=(FOOD&&FOOD.cards[k])||[];FLANG=k;
  el.innerHTML=`<div class="fbar"><div class="lang">${[["ja","日本語"],["en","English"]].map(([c,n])=>`<button class="${c===k?"on":""}" data-a="fclang" data-v="${c}">${n}</button>`).join("")}</div><button class="fclose" data-a="fclose"><svg class="ix" viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg><span>結束</span></button></div><div class="fbody">${ls.map(l=>`<p>${l.h}</p>`).join("")||"<p>（尚未設定飲食偏好）</p>"}</div>`;
  el.classList.add("on");try{document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen().catch(()=>{})}catch(e){}}
-function closeFocus(){const el=$("#focus");if(el)el.classList.remove("on");try{document.fullscreenElement&&document.exitFullscreen()}catch(e){}}
+function closeFoodCard(){const el=$("#focus");if(el)el.classList.remove("on");try{document.fullscreenElement&&document.exitFullscreen()}catch(e){}}
 function dietForm(u){const t=T0(),d=(t.diets&&t.diets[u])||{};modal(`<h3>編輯飲食：${esc(nameOf(t,u))}</h3><div class="fm" data-u="${esc(u)}"><div class="splits">${DTAGS.map(([c,n])=>`<label class="chk"><input type="checkbox" class="dtg" value="${c}" ${(d.tags||[]).includes(c)?"checked":""}> ${n}</label>`).join("")}</div><label class="chk"><input type="checkbox" id="df-flex" ${d.flex?"checked":""}> 可彈性處理（接受鍋邊素、不想給店家添麻煩）</label><label>彈性與極限備註<textarea id="df-note" rows="3" placeholder="例如：接受鍋邊素／香料味不重可接受／主要求方便、不給店家添麻煩">${esc(d.note)}</textarea></label><div class="pills"><button class="pill" data-a="savediet">儲存</button></div></div>`)}
 async function saveDiet(t){const u=document.querySelector(".fm").dataset.u,diets={...(t.diets||{}),[u]:{tags:[...document.querySelectorAll(".dtg:checked")].map(x=>x.value),note:$("#df-note").value.trim(),flex:$("#df-flex").checked}};
  await patch(t,{diets});openFood(t);toast("已儲存飲食設定")}
