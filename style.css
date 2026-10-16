@@ -358,20 +358,20 @@ button .ix,.cb .ix,.x .ix{margin:0 auto}
 .edt .i-edit{flex:none}
 .ai-mic.on{background:rgba(var(--tp-gold),.18);color:#a8742a}
 
-/* ===== 歷史行程：真正的散落畫廊（絕對定位 + 隨機座標／旋轉）+ 聚焦放大 + 雙面翻轉 ===== */
-#l-past{position:relative;display:block;min-height:120px;padding:8px 4px 12px}
-#l-past .empty{text-align:center;padding:38px 0}
-/* 縮小版明信片：每張各自絕對定位，隨機 top/left 與傾斜（由 scatterLayout 指定） */
-.pc-item{position:absolute;top:0;left:0;width:180px;cursor:pointer;
-  box-shadow:0 16px 30px rgba(90,50,10,.16),0 3px 8px rgba(90,50,10,.07);
-  -webkit-user-select:none;user-select:none;touch-action:manipulation;
-  transform:rotate(var(--tilt,0deg));
-  transition:transform .45s cubic-bezier(.22,.8,.25,1),opacity .32s ease}
+/* ===== 歷史行程：重疊明信片堆疊（Card Stack）+ 聚焦放大 + 雙面翻轉 ===== */
+#l-past{position:relative;height:470px;margin-top:34px}
+#l-past .empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:0 20px}
+/* 卡片：絕對定位、上下微幅交錯疊放（位移由 stackLayout 指定），層級由上而下遞減 */
+.pc-item{position:absolute;top:0;left:0;width:100%;height:100%;transform-origin:top center;cursor:pointer;isolation:isolate;
+  box-shadow:0 18px 36px rgba(90,50,10,.16),0 3px 8px rgba(90,50,10,.07);
+  -webkit-user-select:none;user-select:none;touch-action:pan-y;
+  transition:transform .42s cubic-bezier(.22,.8,.25,1),opacity .32s ease}
 .pc-item.dragging{transition:none}
-#l-past .pc-item:hover{transform:rotate(var(--tilt,0deg)) translateY(-7px) scale(1.05)}
-/* 聚焦時：其餘散落明信片淡出並停用點擊 */
-#l-past.focused .pc-item{opacity:0;pointer-events:none;transform:rotate(var(--tilt,0deg)) scale(.86)}
-/* 明信片本體：四邊鋸齒花邊遮罩 + 透光白毛玻璃（正面、背面共用） */
+.pc-item.out{opacity:0}
+#l-past .pc-item:hover{box-shadow:0 26px 50px rgba(90,50,10,.2),0 4px 10px rgba(90,50,10,.08)}
+/* 聚焦時：其餘堆疊卡片淡出並停用點擊 */
+#l-past.focused .pc-item{opacity:0;pointer-events:none}
+/* 明信片本體：四邊鋸齒花邊遮罩 + 純白不透明玻璃（正面、背面共用，防透光） */
 .pc-face{
   --tooth:10px;--depth:7px;
   --stamp-img:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7' viewBox='0 0 10 7'%3E%3Cpath d='M0 7L5 0L10 7Z' fill='black'/%3E%3C/svg%3E"),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7' viewBox='0 0 10 7'%3E%3Cpath d='M0 0L5 7L10 0Z' fill='black'/%3E%3C/svg%3E"),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='7' height='10' viewBox='0 0 7 10'%3E%3Cpath d='M7 0L0 5L7 10Z' fill='black'/%3E%3C/svg%3E"),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='7' height='10' viewBox='0 0 7 10'%3E%3Cpath d='M0 0L7 5L0 10Z' fill='black'/%3E%3C/svg%3E"),linear-gradient(#000,#000);
@@ -379,7 +379,7 @@ button .ix,.cb .ix,.x .ix{margin:0 auto}
   --stamp-size:var(--tooth) var(--depth),var(--tooth) var(--depth),var(--depth) var(--tooth),var(--depth) var(--tooth),calc(100% - var(--depth) - var(--depth)) calc(100% - var(--depth) - var(--depth));
   --stamp-rep:repeat-x,repeat-x,repeat-y,repeat-y,no-repeat;
   overflow:hidden;display:flex;flex-direction:column;
-  background:rgba(255,255,255,.45);
+  background:#fff; /* 純白不透明：底層／背面其他卡片的文字絕對不會透出 */
   -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
   -webkit-mask-image:var(--stamp-img);mask-image:var(--stamp-img);
   -webkit-mask-position:var(--stamp-pos);mask-position:var(--stamp-pos);
@@ -396,14 +396,15 @@ button .ix,.cb .ix,.x .ix{margin:0 auto}
 .pc-note p{margin-top:7px;font-size:.94rem;line-height:1.75;color:var(--tx);white-space:pre-wrap;overflow-wrap:anywhere}
 .pc-act{margin-top:auto;padding-top:16px}
 .pc-act .pill{min-height:38px;padding:0 15px;font-size:.8rem}
-/* 散落縮小版：內容精簡，操作鈕留在聚焦版使用 */
-#l-past .pc-front{padding:11px 11px 10px}
-#l-past .pc-front h3{font-size:.85rem;padding-right:0;max-height:2.7em;overflow:hidden}
-#l-past .pc-meta{margin-top:5px;font-size:.62rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#l-past .pc-mates,#l-past .pc-act{display:none}
-#l-past .pc-note{margin-top:8px}
-#l-past .pc-note em{font-size:.55rem;letter-spacing:.14em}
-#l-past .pc-note p{margin-top:4px;font-size:.68rem;line-height:1.5;max-height:4.5em;overflow:hidden}
+/* 堆疊卡片（滿幅）：完整資訊與操作鈕，內容不截斷 */
+#l-past .pc-front{padding:26px 26px 22px}
+#l-past .pc-front h3{font-size:1.3rem;padding-right:0}
+#l-past .pc-meta{font-size:.9rem;white-space:normal;overflow:visible;text-overflow:clip}
+#l-past .pc-mates{font-size:.9rem}
+#l-past .pc-note{margin-top:18px}
+#l-past .pc-note p{font-size:.96rem;line-height:1.75;max-height:none;overflow:visible}
+#l-past .pc-act{padding-top:18px}
+#l-past .pc-act .pill{min-height:42px;padding:0 17px;font-size:.84rem}
 /* 背面：照片藝廊頁（1:1 方形、object-fit:contain 直橫式都不變形） */
 .pc-back{padding:20px}
 .pc-back-in{display:flex;gap:18px;align-items:center;flex:1;min-height:0}
@@ -456,6 +457,11 @@ body.pcopen{overflow:hidden}
 #t-past .addfab .pill{pointer-events:auto;min-height:50px;padding:0 26px;font-size:.92rem;background:rgba(255,255,255,.6);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.8);color:var(--ink);box-shadow:0 14px 30px rgba(90,50,10,.16),0 2px 6px rgba(90,50,10,.06)}
 
 @media(max-width:560px){
+  #l-past{height:430px;margin-top:30px}
+  #l-past .pc-front{padding:20px 18px 18px}
+  #l-past .pc-front h3{font-size:1.12rem}
+  #l-past .pc-note{margin-top:14px}
+  #l-past .pc-act .pill{min-height:38px;padding:0 14px;font-size:.78rem}
   .pc-fliphint{top:12px;right:12px;bottom:auto}
   .pc-big .pc-front h3{padding-right:126px}
   .pc-big .pc-act{padding-right:0}
