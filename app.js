@@ -179,7 +179,7 @@ function pcFront(t,big){const{dateTxt,mateTxt}=pcMeta(t);
   <p class="pc-mates">同行：${esc(mateTxt)}</p>
   <div class="pc-note"><em>心情札記</em><p>${t.notes?esc(t.notes):"還沒有寫下這趟旅程的心情札記…"}</p></div>
   <div class="pills pc-act">${me?`<button class="pill" data-a="edit" data-v="${esc(t.id)}"><i class=i-edit></i> 編輯</button>`:""}${t.spots?.length?`<a class="pill gl" href="https://maps.google.com/?q=${t.spots[0].lat},${t.spots[0].lng}" target="_blank" rel="noopener">地圖</a>`:""}${t.status==="past"?`<button class="pill gl" data-a="setcur" data-v="${esc(t.id)}">設為當前行程</button>`:""}${t.owner===me?.uid?`<button class="pill gl" data-a="del" data-v="${esc(t.id)}"><svg class="ix" viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg> 刪除</button>`:""}</div>
-  ${big?`<button class="pc-fliphint" data-a="pflip" type="button">點擊卡片翻面看照片 🔄</button>`:""}`}
+  ${big?`<button class="pc-fliphint" data-a="pflip" type="button">滑動或點擊翻面看照片 🔄</button>`:""}`}
 function pcBack(t){const P=photosOf(t.id),n=P.length;
  const strip=P.map((src,i)=>`<div class="pc-slide"><img src="${src}" alt="${esc(t.title)} 照片 ${i+1}" loading="lazy"></div>`).join("");
  const dots=n>1?`<div class="pc-dots">${P.map((_,i)=>`<i class="${i?"":"on"}" data-i="${i}"></i>`).join("")}</div>`:"";
@@ -200,7 +200,6 @@ function pcBack(t){const P=photosOf(t.id),n=P.length;
 function pcard(t){return`<article class="pc-item" data-pid="${esc(t.id)}"><div class="pc-face pc-front">${pcFront(t,false)}</div></article>`}
 /* 聚焦：滿幅明信片（正面 + 背面，可 3D 翻面） */
 function focusHTML(t){return`<article class="pc-item pc-big" data-pid="${esc(t.id)}">
-  <button class="pc-xbig" data-a="pclose" type="button" aria-label="返回總覽"><svg class="ix" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
   <div class="pc-flip">
    <div class="pc-face pc-front">${pcFront(t,true)}</div>
    <div class="pc-face pc-back">${pcBack(t)}</div>
@@ -229,16 +228,65 @@ function bindShot(item){const shot=item.querySelector(".pc-shot");if(!shot||shot
 let FOCUS=null;
 const hashOf=s=>{const x=String(s);let h=2166136261;for(let i=0;i<x.length;i++){h^=x.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0};
 function scatterInit(){const box=$("#l-past");if(!box)return;
- [...box.querySelectorAll(".pc-item")].forEach(el=>{
-  const h=hashOf(el.dataset.pid||"x");
-  el.style.setProperty("--tilt",(-3+(h%70)/10).toFixed(2)+"deg"); /* -3deg ~ 3.9deg 隨機傾斜 */
-  el.style.setProperty("--dx",((h>>>7)%21-10)+"px");
-  el.style.setProperty("--dy",((h>>>11)%17-8)+"px");
-  if(el._sc)return;el._sc=1;
+ const items=[...box.querySelectorAll(".pc-item")];
+ scatterLayout(items);
+ if(window.ResizeObserver&&!box._ro){box._ro=1;                 /* 尺寸／顯示狀態改變時重排 */
+  new ResizeObserver(()=>{clearTimeout(__rlt);__rlt=setTimeout(()=>scatterLayout(),90)}).observe(box)}
+ items.forEach(el=>{if(el._sc)return;el._sc=1;
   el.addEventListener("click",e=>{if(e.target.closest("button,a,input,label,select,textarea"))return;openFocus(el.dataset.pid)})})}
+/* 真正的散落畫廊：絕對定位 + 每張卡各自的隨機 top/left + 隨機旋轉（不用 grid/flex 排列） */
+function scatterLayout(items){const box=$("#l-past");if(!box)return;
+ const list=items||[...box.querySelectorAll(".pc-item")];
+ if(!list.length){box.style.height="";return}
+ const W=box.clientWidth||320;
+ const cw=Math.round(Math.max(92,Math.min(210,W*0.30)));           /* 手機約畫面 1/3 寬 */
+ const gapX=Math.max(8,Math.round(cw*.16));
+ const cols=Math.max(1,Math.min(list.length,Math.floor((W+gapX)/(cw+gapX))));
+ const slack=Math.max(0,(W-(cols*cw+(cols-1)*gapX))/2);
+ const colY=[];for(let c=0;c<cols;c++)colY[c]=8+c*26+(hashOf("c"+c)%23);
+ list.forEach((el,i)=>{
+  const h=hashOf(el.dataset.pid||("i"+i)),col=i%cols;
+  el.style.width=cw+"px";
+  el.style.setProperty("--tilt",(-6+((h>>>3)%101)/10).toFixed(1)+"deg"); /* -6deg ~ +4deg */
+  el.style.zIndex=String(1+((h>>>9)%97));
+  const jx=Math.round(((((h>>>5)%101)/100)-.5)*gapX*.9);
+  const jy=Math.round(((((h>>>13)%101)/100)-.5)*20);
+  el.style.left=Math.max(0,Math.min(W-cw,Math.round(slack+col*(cw+gapX)+jx)))+"px";
+  el.style.top=Math.max(0,colY[col]+jy)+"px";
+  colY[col]+=el.offsetHeight+10+((h>>>17)%16)});
+ let H=0;colY.forEach(y=>{H=Math.max(H,y)});box.style.height=(H+26)+"px"}
+let __rlt=null;
+addEventListener("resize",()=>{clearTimeout(__rlt);__rlt=setTimeout(()=>scatterLayout(),160)});
+/* 聚焦互動：卡片上左右滑動／輕點 → 翻面；點卡片以外的背景 → 返回散落 */
 function bindStage(stage){bindShot(stage);if(stage._sc)return;stage._sc=1;
- stage.addEventListener("click",e=>{if(e.target.closest("button,a,input,label,select,textarea,.pc-shot,.pc-dots"))return;flipStage()})}
-function flipStage(){const fl=$("#pc-stage .pc-flip");if(!fl)return;fl.classList.toggle("flip");if(FOCUS)FOCUS.flip=fl.classList.contains("flip")}
+ const CTL=".pc-shot,.pc-dots,.pc-x,button,a,input,label,select,textarea";
+ let x0=null,moved=false,card=null,bg=false;
+ const down=e=>{if(e.target.closest(CTL)){x0=null;return}
+  x0=e.clientX;moved=false;card=e.target.closest(".pc-item");bg=!card;
+  if(card)card.classList.add("dragging")};
+ const move=e=>{if(x0==null)return;const dx=e.clientX-x0;
+  if(Math.abs(dx)>10)moved=true;
+  if(moved&&card)card.style.transform=`translateX(${(dx*.3).toFixed(1)}px)`};
+ const up=e=>{if(x0==null)return;
+  const dx=e.clientX==null?0:e.clientX-x0,tap=!moved,isBg=bg,c=card;
+  x0=null;bg=false;card=null;
+  if(c){c.classList.remove("dragging");c.style.transform=""}
+  if(isBg){if(tap)closeFocus();return}                 /* 點背景 → 退回散落 */
+  const fl=stage.querySelector(".pc-flip");if(!fl)return;
+  if(Math.abs(dx)>=60){const back=dx<0;                /* 左滑 → 翻到背面，右滑 → 翻回正面 */
+   if(back&&!fl.classList.contains("flip"))flipStage();
+   else if(!back&&fl.classList.contains("flip"))flipStage();return}
+  if(tap)flipStage()};                                 /* 輕點卡片 → 翻面 */
+ stage.addEventListener("pointerdown",down);
+ stage.addEventListener("pointermove",move);
+ stage.addEventListener("pointerup",up);
+ stage.addEventListener("pointercancel",()=>{if(card){card.classList.remove("dragging");card.style.transform=""}x0=null;card=null});
+ document.addEventListener("pointerup",up);            /* 手指滑出卡片外也要收尾 */
+ document.addEventListener("pointercancel",()=>{if(card){card.classList.remove("dragging");card.style.transform=""}x0=null;card=null})}
+function flipStage(){const fl=$("#pc-stage .pc-flip");if(!fl)return;fl.classList.remove("peek");fl.classList.toggle("flip");if(FOCUS)FOCUS.flip=fl.classList.contains("flip")}
+/* 翻頁提示：放大到中央後先往後 peek 一下再彈回 */
+function peekFlip(){const fl=$("#pc-stage .pc-flip");if(!fl)return;fl.classList.remove("peek");void fl.offsetWidth;fl.classList.add("peek");
+ setTimeout(()=>{const f=$("#pc-stage .pc-flip");if(f)f.classList.remove("peek")},1000)}
 function openFocus(id){if(!id)return;const t=visible().find(x=>x.id===id);if(!t)return;
  const src=document.querySelector('#l-past .pc-item[data-pid="'+id+'"]'),over=$("#pc-over"),stage=$("#pc-stage");
  if(!over||!stage)return;
@@ -248,19 +296,23 @@ function openFocus(id){if(!id)return;const t=visible().find(x=>x.id===id);if(!t)
  bindStage(stage);
  const card=stage.querySelector(".pc-item");
  if(src&&card){const f=src.getBoundingClientRect(),g=card.getBoundingClientRect();
-  if(g.width&&g.height){card.style.transition="none";
-   card.style.transform=`translate(${f.left-g.left}px,${f.top-g.top}px) scale(${(f.width/g.width).toFixed(4)},${(f.height/g.height).toFixed(4)})`;
-   requestAnimationFrame(()=>requestAnimationFrame(()=>{card.style.transition="";card.style.transform=""}))}}}
+  if(g.width&&g.height){
+   const P=1400,D=220,k=P/(P+D);                      /* 先退到 Z 軸後方，再往前推進放大 */
+   card.style.transition="none";
+   card.style.transform=`translate3d(${((f.left-g.left)/k).toFixed(1)}px,${((f.top-g.top)/k).toFixed(1)}px,${-D}px) scale(${(f.width/g.width/k).toFixed(4)},${(f.height/g.height/k).toFixed(4)})`;
+   requestAnimationFrame(()=>requestAnimationFrame(()=>{card.style.transition="";card.style.transform=""}))}}
+ setTimeout(peekFlip,520)}
 function closeFocus(){if(!FOCUS)return;const id=FOCUS.id;FOCUS=null;
  const over=$("#pc-over"),stage=$("#pc-stage"),card=stage&&stage.querySelector(".pc-item");
  $("#l-past").classList.remove("focused");document.body.classList.remove("pcopen");
  if(over)over.classList.add("closing");
  const tgt=document.querySelector('#l-past .pc-item[data-pid="'+id+'"]');
  if(card&&tgt){const f=tgt.getBoundingClientRect(),g=card.getBoundingClientRect();
-  if(g.width&&g.height){card.style.transition="none";
-   card.style.transform=`translate(${f.left-g.left}px,${f.top-g.top}px) scale(${(f.width/g.width).toFixed(4)},${(f.height/g.height).toFixed(4)})`;
-   requestAnimationFrame(()=>requestAnimationFrame(()=>{card.style.transition="";card.style.transform=""}))}}
- setTimeout(()=>{if(!FOCUS&&over&&stage){over.hidden=true;over.classList.remove("closing");stage.innerHTML=""}},480)}
+  if(g.width&&g.height){
+   const P=1400,D=220,k=P/(P+D);
+   card.style.transition="";                            /* 反向：縮小並退回散落座標 */
+   card.style.transform=`translate3d(${((f.left-g.left)/k).toFixed(1)}px,${((f.top-g.top)/k).toFixed(1)}px,${-D}px) scale(${(f.width/g.width/k).toFixed(4)},${(f.height/g.height/k).toFixed(4)})`}}
+ setTimeout(()=>{if(!FOCUS&&over&&stage){over.hidden=true;over.classList.remove("closing");stage.innerHTML=""}},560)}
 function repaintFocus(){if(!FOCUS)return;
  const over=$("#pc-over"),stage=$("#pc-stage");if(!over||!stage)return;
  const t=visible().find(x=>x.id===FOCUS.id);
@@ -411,7 +463,7 @@ document.addEventListener("input",e=>{if(e.target.id==="jpy"||e.target.id==="rat
 document.addEventListener("change",e=>{const c=e.target.closest("input[data-k]"),t=T0();if(!c||!t)return;const P=plist(t);P[c.dataset.k][+c.dataset.i].d=c.checked?1:0;savePl(t,P);c.closest(".ck").classList.toggle("done",c.checked)});
 
 document.addEventListener("change",e=>{const i=e.target.closest("input[data-b]"),t=T0();if(!i||!t)return;const L=bkList(t);L[+i.dataset.i][i.dataset.b]=i.value.trim();saveBk(t,L)});
-function go(id){setEdit(false);cur=id;if(FOCUS&&id!=="past")closeFocus();document.body.classList.remove("dr");document.querySelectorAll(".panel").forEach(p=>p.classList.toggle("on",p.id==="t-"+id));renderDrawer();window.scrollTo({top:0});if(id==="map")MapView.refresh();if(id==="now")MiniMap.refresh()}
+function go(id){setEdit(false);cur=id;if(FOCUS&&id!=="past")closeFocus();if(id==="past")setTimeout(()=>scatterLayout(),0);document.body.classList.remove("dr");document.querySelectorAll(".panel").forEach(p=>p.classList.toggle("on",p.id==="t-"+id));renderDrawer();window.scrollTo({top:0});if(id==="map")MapView.refresh();if(id==="now")MiniMap.refresh()}
 const ICN={now:"cal",tix:"card",storm:"note",yen:"yen",pack:"chk",map:"globe",past:"clock",future:"compass"};
 function renderDrawer(){const t=T0(),nm=t?(t.short||t.title):"",b=(id,c)=>`<button class="${c} ${cur===id?"on":""}" data-t="${id}"><i class="ic ic-${ICN[id]}"></i>${LB[id]}</button>`;
  $("#drawer").innerHTML=`<p class="eyebrow brand" data-a="home">TripTick</p><h2 class="brand" data-a="home">歷歷</h2><p class="grp"><i class="ic ic-pin"></i>當前旅程　${t?esc(nm):"（目前沒有）"}</p>${t?SUB.map(i=>b(i,"sub")).join(""):""}<p class="grp">其他旅程</p>${["map","past","future"].map(i=>b(i,"")).join("")}${drawerExtra()}<p class="meta" style="margin-top:auto">資料儲存在你的 Google 帳戶。</p>`;
