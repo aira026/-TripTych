@@ -178,11 +178,8 @@ function pcFront(t,big){const{dateTxt,mateTxt}=pcMeta(t);
   <p class="pc-meta">${flagOf(t)} ${esc(t.country)||"未知國家"}・${esc(dateTxt)}・${nd(t)} 天</p>
   <p class="pc-mates">同行：${esc(mateTxt)}</p>
   <div class="pc-note"><em>心情札記</em><p>${t.notes?esc(t.notes):"還沒有寫下這趟旅程的心情札記…"}</p></div>
-  <div class="pills pc-act">${me?`<button class="pill" data-a="edit" data-v="${esc(t.id)}"><i class=i-edit></i> 編輯</button>`:""}${t.spots?.length?`<a class="pill gl" href="https://maps.google.com/?q=${t.spots[0].lat},${t.spots[0].lng}" target="_blank" rel="noopener">地圖</a>`:""}${t.status==="past"?`<button class="pill gl" data-a="setcur" data-v="${esc(t.id)}">設為當前行程</button>`:""}${t.owner===me?.uid?`<button class="pill gl" data-a="del" data-v="${esc(t.id)}"><svg class="ix" viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg> 刪除</button>`:""}</div>
-  <div class="pc-photo">
-   <label>照片網址<input type="text" class="pc-url" data-pid="${esc(t.id)}" placeholder="貼上圖片網址（如 Google 雲端公開圖片連結）" value="${esc(t.image||"")}"></label>
-   ${t.image?`<img src="${esc(t.image)}" alt="${esc(t.title)} 照片" class="pc-preview" loading="lazy" onerror="this.style.display='none'">`:""}
-  </div>`}
+  ${t.image?`<img src="${esc(t.image)}" alt="${esc(t.title)} 照片" class="pc-preview" loading="lazy" onerror="this.style.display='none'">`:""}
+  <div class="pills pc-act">${me?`<button class="pill" data-a="edit" data-v="${esc(t.id)}"><i class=i-edit></i> 編輯</button>`:""}${t.spots?.length?`<a class="pill gl" href="https://maps.google.com/?q=${t.spots[0].lat},${t.spots[0].lng}" target="_blank" rel="noopener">地圖</a>`:""}${t.status==="past"?`<button class="pill gl" data-a="setcur" data-v="${esc(t.id)}">設為當前行程</button>`:""}${t.owner===me?.uid?`<button class="pill gl" data-a="del" data-v="${esc(t.id)}"><svg class="ix" viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg> 刪除</button>`:""}</div>`}
 /* 總覽：縮小版明信片（只放正面文字頁） */
 function pcard(t){return`<article class="pc-item" data-pid="${esc(t.id)}"><div class="pc-face pc-front">${pcFront(t,false)}</div></article>`}
 /* 聚焦：滿幅明信片（正面 + 背面，可 3D 翻面） */
@@ -286,6 +283,7 @@ function form(st,id){const t0=TRIPS.find(x=>x.id===id),t=t0?{...t0,status:status
  <label>類型<select id="f-st"><option value="now" ${t.status==="now"?"selected":""}>當前旅程</option><option value="past" ${t.status==="past"?"selected":""}>歷史旅程</option><option value="future" ${t.status==="future"?"selected":""}>未來清單</option></select></label>
  ${id?`<label>照片（本機相簿，最多 ${PH_MAX} 張）<span class="pc-up">從相簿選擇<input class="pc-file" type="file" accept="image/*" multiple data-ph="${esc(id)}"></span></label>`:`<label>照片<span class="meta">先按「儲存」建立行程，再到歷史明信片右側上傳（最多 ${PH_MAX} 張）。</span></label>`}
  <label>備註<textarea id="f-note" rows="3">${esc(t.notes)}</textarea></label>
+ <label>照片網址<input id="f-image" type="text" value="${esc(t.image||"")}" placeholder="貼上圖片網址（如 Google 雲端公開圖片連結）"></label>
  <details><summary>進階：座標（留空會自動查詢）</summary><div class="two"><label>緯度<input id="f-lat" type="number" step="any" value="${sp.lat??""}"></label><label>經度<input id="f-lng" type="number" step="any" value="${sp.lng??""}"></label></div></details>
  <div class="pills"><button class="pill" data-a="save">儲存</button></div></div>`)}
 async function geo(q){try{const r=await fetch("https://nominatim.openstreetmap.org/search?format=json&limit=1&q="+encodeURIComponent(q));const j=await r.json();return j[0]?[+j[0].lat,+j[0].lon]:null}catch(e){return null}}
@@ -299,7 +297,7 @@ async function saveForm(){if(!me)return toast("請先登入");
  if(!isNaN(lat)&&!isNaN(lng)){if(spots.length&&spots[0].lat===lat&&spots[0].lng===lng){}else if(spots.length)spots[0]={...spots[0],lat,lng};else spots.push({name:place,lat,lng,day:1})}
  else if(!spots.length){toast("查詢座標中…");const g=await geo(place+", "+country);if(g)spots.push({name:place,lat:g[0],lng:g[1],day:1});else toast("找不到座標，可稍後編輯")}
  const s=v("e")&&v("s")?v("s"):v("s"),e=v("e"),nDays=s&&e?Math.max(1,Math.round((new Date(e)-new Date(s))/864e5)+1):(old?.nDays||1);
- const base={title:place,country,countryCode:FL[country]||"",startDate:s,endDate:e,image:old?(old.image||""):"",notes:v("note"),nDays,spots},st=v("st");
+ const base={title:place,country,countryCode:FL[country]||"",startDate:s,endDate:e,image:v("image"),notes:v("note"),nDays,spots},st=v("st");
  try{if(old){await patch(old,base);if(st==="now")await archiveNow(old.id);await setSt(old,st)}
  else{if(st==="now")await archiveNow("");const ref=doc(collection(db,"trips"));await setDoc(ref,{...clean({...base,days:[],booking:[],expenses:[],currency:CUR[country]||"TWD",diets:{},ext:EXT0,owner:me.uid,members:[me.uid],memberNames:{[me.uid]:me.displayName||"我"},st:{[me.uid]:st}}),createdAt:serverTimestamp()})}
  $("#modal").classList.remove("on");toast("已儲存")}catch(err){toast("儲存失敗："+(err.code||err.message))}}
@@ -320,8 +318,6 @@ function tick(){const el=$("#cd"),t=visible().find(x=>x.status==="now"&&!x.locke
 /* events */
 document.addEventListener("change",e=>{const f=e.target;if(!f||f.tagName!=="INPUT"||f.type!=="file"||!f.files||!f.files.length)return;const id=f.dataset.ph;if(id)addPhotos(id,f.files);f.value=""});
 /* 照片網址輸入：即時預覽 + 持續儲存 */
-document.addEventListener("input",e=>{const f=e.target;if(!f||!f.classList.contains("pc-url"))return;const pid=f.dataset.pid;const v=f.value.trim();const t=TRIPS.find(x=>x.id===pid);if(!t)return;const img=f.parentNode.querySelector("img.pc-preview");if(v){if(!img){const ni=document.createElement("img");ni.className="pc-preview";ni.loading="lazy";ni.onerror=function(){this.style.display="none"};ni.src=v;f.parentNode.appendChild(ni)}else{img.src=v;img.style.display="";}}else if(img){img.remove()}});
-document.addEventListener("change",e=>{const f=e.target;if(!f||!f.classList.contains("pc-url"))return;const pid=f.dataset.pid;const v=f.value.trim();const t=TRIPS.find(x=>x.id===pid);if(!t)return;if(me&&t.image!==v){patch(t,{image:v})}else{t.image=v}});
 document.addEventListener("keydown",e=>{if((e.key==="Escape"||e.key==="Esc")&&FOCUS)closeFocus()});
 document.addEventListener("click",e=>{const b=e.target.closest("[data-a],[data-t]");if(!b)return;
  const t=visible().find(x=>x.status==="now"&&!x.locked),a=b.dataset.a,v=b.dataset.v;
