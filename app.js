@@ -257,7 +257,7 @@ function openFocus(id){if(!id)return;const t=visible().find(x=>x.id===id);if(!t)
    const P=1400,D=220,k=P/(P+D);                      /* 先退到 Z 軸後方，再往前推進放大 */
    card.style.transition="none";
    card.style.transform=`translate3d(${((f.left-g.left)/k).toFixed(1)}px,${((f.top-g.top)/k).toFixed(1)}px,${-D}px) scale(${(f.width/g.width/k).toFixed(4)},${(f.height/g.height/k).toFixed(4)})`;
-   requestAnimationFrame(()=>requestAnimationFrame(()=>{card.style.transition="";card.style.transform=""}))}}
+   requestAnimationFrame(()=>requestAnimationFrame(()=>{card.style.transition="";card.style.transform=""}))}}}
 function closeFocus(){if(!FOCUS)return;const id=FOCUS.id;FOCUS=null;
  const over=$("#pc-over"),stage=$("#pc-stage"),card=stage&&stage.querySelector(".pc-item");
  $("#l-past").classList.remove("focused");document.body.classList.remove("pcopen");
