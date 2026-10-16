@@ -368,7 +368,7 @@ button .ix,.cb .ix,.x .ix{margin:0 auto}
   -webkit-user-select:none;user-select:none;touch-action:pan-y;
   will-change:transform,opacity;
   transform:translate3d(0,0,0);
-  transition:transform 0.35s cubic-bezier(0.25,1,0.5,1),opacity 0.3s cubic-bezier(0.25,1,0.5,1)}
+  transition:transform 0.3s cubic-bezier(0.25,1,0.5,1),opacity 0.3s ease}
 .pc-item.dragging{transition:none}
 .pc-item.out{opacity:0}
 #l-past .pc-item:hover{box-shadow:0 26px 50px rgba(90,50,10,.2),0 4px 10px rgba(90,50,10,.08)}
@@ -381,7 +381,7 @@ button .ix,.cb .ix,.x .ix{margin:0 auto}
   --stamp-pos:left top,left bottom,left top,right top,center;
   --stamp-size:var(--tooth) var(--depth),var(--tooth) var(--depth),var(--depth) var(--tooth),var(--depth) var(--tooth),calc(100% - var(--depth) - var(--depth)) calc(100% - var(--depth) - var(--depth));
   --stamp-rep:repeat-x,repeat-x,repeat-y,repeat-y,no-repeat;
-  position:relative;max-width:360px;width:100%;box-sizing:border-box;margin:0 auto;overflow:hidden;display:flex;flex-direction:column;
+  position:relative;width:320px;height:480px;max-height:80vh;box-sizing:border-box;margin:0 auto;overflow:hidden;display:flex;flex-direction:column;
   background:#ffffff; /* 純白不透明：底層／背面其他卡片的文字絕對不會透出 */
   -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
   -webkit-mask-image:var(--stamp-img);mask-image:var(--stamp-img);
@@ -421,7 +421,7 @@ button .ix,.cb .ix,.x .ix{margin:0 auto}
 .pc-scrim{position:absolute;inset:0;background:rgba(52,36,18,.34);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);transition:opacity 0.3s cubic-bezier(0.25,1,0.5,1);cursor:pointer}
 .pc-over.closing .pc-scrim{opacity:0}
 .pc-stage{position:relative;width:100%;height:100%;display:flex;align-items:center;justify-content:center;padding:16px;perspective:1400px}
-.pc-big{position:relative;width:min(720px,calc(100vw - 28px));height:min(560px,calc(100vh - 150px));min-height:0;border-radius:10px;transform:none;cursor:default;perspective:1600px;will-change:transform,opacity;transform:translate3d(0,0,0);transition:transform 0.35s cubic-bezier(0.25,1,0.5,1),opacity 0.3s cubic-bezier(0.25,1,0.5,1)}
+.pc-big{position:relative;width:min(720px,calc(100vw - 28px));height:min(560px,calc(100vh - 150px));min-height:0;border-radius:10px;transform:none;cursor:default;perspective:1600px;will-change:transform,opacity;transform:translate3d(0,0,0);transition:transform 0.3s cubic-bezier(0.25,1,0.5,1),opacity 0.3s ease}
 .pc-big .pc-note{margin-top:26px}
 .pc-big .pc-note p{font-size:1.02rem;line-height:1.8}
 .pc-big .pc-act{padding-top:22px}
