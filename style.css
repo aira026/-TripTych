@@ -359,7 +359,7 @@ button .ix,.cb .ix,.x .ix{margin:0 auto}
 .ai-mic.on{background:rgba(var(--tp-gold),.18);color:#a8742a}
 
 /* ===== 歷史行程：重疊明信片堆疊（Card Stack）+ 聚焦放大 + 雙面翻轉 ===== */
-#l-past{position:relative;height:470px;margin-top:34px}
+#l-past{position:relative;height:600px;margin-top:34px}
 #l-past .empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:0 20px}
 /* 卡片：絕對定位、上下微幅交錯疊放（位移由 stackLayout 指定），層級由上而下遞減 */
 .pc-item{position:absolute;top:0;left:0;width:100%;height:100%;transform-origin:top center;cursor:pointer;isolation:isolate;
@@ -381,7 +381,8 @@ button .ix,.cb .ix,.x .ix{margin:0 auto}
   --stamp-pos:left top,left bottom,left top,right top,center;
   --stamp-size:var(--tooth) var(--depth),var(--tooth) var(--depth),var(--depth) var(--tooth),var(--depth) var(--tooth),calc(100% - var(--depth) - var(--depth)) calc(100% - var(--depth) - var(--depth));
   --stamp-rep:repeat-x,repeat-x,repeat-y,repeat-y,no-repeat;
-  position:relative;width:320px;height:480px;max-height:80vh;box-sizing:border-box;margin:0 auto;overflow:hidden;display:flex;flex-direction:column;
+  position:relative;width:340px;height:560px;max-height:80vh;box-sizing:border-box;margin:0 auto;overflow:hidden;display:flex;flex-direction:column;
+  z-index:10;
   background:#ffffff; /* 純白不透明：底層／背面其他卡片的文字絕對不會透出 */
   -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
   -webkit-mask-image:var(--stamp-img);mask-image:var(--stamp-img);
@@ -390,7 +391,7 @@ button .ix,.cb .ix,.x .ix{margin:0 auto}
   -webkit-mask-repeat:var(--stamp-rep);mask-repeat:var(--stamp-rep);
 }
 /* 正面：文字資訊頁（行程名稱／簡介／心情札記／編輯按鈕），放滿整張明信片 */
-.pc-front{position:relative;flex:1;overflow-y:auto;max-height:100%;box-sizing:border-box;padding:22px 22px 20px}
+.pc-front{position:relative;flex:1;overflow-y:auto;max-height:100%;box-sizing:border-box;padding:28px 26px 30px}
 .pc-front h3{font-size:1.18rem;font-weight:500;color:var(--ink);line-height:1.35;letter-spacing:.01em;padding-right:34px}
 .pc-meta{margin-top:8px;font-size:.86rem;color:var(--mut)}
 .pc-mates{margin-top:3px;font-size:.86rem;color:var(--mut)}
@@ -401,7 +402,8 @@ button .ix,.cb .ix,.x .ix{margin:0 auto}
 #l-past .pc-preview{max-height:260px}
 .pc-big .pc-preview{max-height:320px}
 .pc-act{margin-top:auto;padding-top:16px}
-.pc-act .pill{min-height:38px;padding:0 15px;font-size:.8rem}
+.pc-act .pill{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:0 18px;font-size:.82rem;border:0;border-radius:999px;background:rgba(255,255,255,.82);color:#1a1a1a;font-weight:600;box-shadow:0 6px 14px rgba(0,0,0,.08),0 2px 4px rgba(0,0,0,.06);cursor:pointer;transition:transform .15s,box-shadow .15s}
+.pc-act .pill:active{transform:scale(.96)}
 /* 堆疊卡片（滿幅）：完整資訊與操作鈕，內容不截斷 */
 #l-past .pc-front{padding:26px 26px 22px}
 #l-past .pc-front h3{font-size:1.3rem;padding-right:0}
@@ -427,6 +429,12 @@ button .ix,.cb .ix,.x .ix{margin:0 auto}
 .pc-big .pc-act{padding-top:22px}
 .pc-big .pc-act .pill{min-height:44px;padding:0 19px;font-size:.88rem}
 body.pcopen{overflow:hidden}
+
+/* ===== 「新增旅程」：右下角固定圓形懸浮按鈕 ===== */
+#t-past .addfab{position:fixed;right:24px;bottom:24px;z-index:900;pointer-events:none}
+#t-past .addfab .pill{position:relative;pointer-events:auto;width:56px;height:56px;min-height:56px;padding:0;border-radius:50%;background:rgba(255,255,255,0.65);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.8);color:var(--ink);font-weight:700;box-shadow:0 14px 30px rgba(90,50,10,.16),0 2px 6px rgba(90,50,10,.06);cursor:pointer;transition:transform .15s,box-shadow .15s;display:flex;align-items:center;justify-content:center;overflow:hidden}
+#t-past .addfab .pill:active{transform:scale(.92)}
+#t-past .addfab .pill span.dot{position:relative;z-index:1;font-size:1.4rem;line-height:1}
 
 /* ===== 「新增旅程」：底部懸浮的透光白色玻璃按鈕 ===== */
 @media(max-width:560px){

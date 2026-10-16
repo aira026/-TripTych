@@ -200,8 +200,11 @@ function stackLayout(){const box=$("#l-past");if(!box)return;
   el.classList.toggle("top",i===0);
   el.style.visibility=i>4?"hidden":"visible";
   if(el.classList.contains("dragging")||el.classList.contains("out"))return;
-  /* 後方卡片：上下微幅交錯 + 輕微縮放，形成一疊明信片 */
-  el.style.transform=i?`translateY(${(i%2?-1:1)*Math.ceil(i/2)*14}px) scale(${Math.max(.9,1-.02*i).toFixed(3)})`:""})}
+  /* 後方卡片：不規則隨機旋轉與錯位偏移，形成自然桌面散落堆疊感 */
+  const r=(i*17+i*31)%11-5;               /* -5..5 決定性隨機 */
+  const rx=(i*13+i*29)%7-3;                /* -3..3 旋轉角度 */
+  const ry=(i*11+i*23)%13-6;               /* -6..6 Y 錯位 */
+  el.style.transform=i?`translateX(${ry}px) translateY(${(i%2?-1:1)*Math.ceil(i/2)*10}px) rotate(${rx}deg) scale(${Math.max(.88,1-.025*i).toFixed(3)})`:""})}
 /* 滑掉 → 飛出並移到最底層（循環播放） */
 function rotateTop(dir){const box=$("#l-past");if(!box)return;
  const items=[...box.querySelectorAll(".pc-item")];if(items.length<2)return;
