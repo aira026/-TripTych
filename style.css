@@ -78,7 +78,7 @@ body{background:#f6ead9;padding-bottom:120px}
 .aurora i{opacity:.65}.aurora i:nth-child(1){background:#ffb27a}.aurora i:nth-child(2){background:#ffd9a8}.aurora i:nth-child(3){background:#ffc2a6}
 .glass{-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);box-shadow:0 20px 40px rgba(90,50,10,.07)}
 .glass.dark{background:rgba(17,17,17,.94)}
-.top{display:flex;align-items:center;gap:14px}
+.top{display:flex;align-items:center;gap:14px;z-index:200 !important;}
 .menu{flex:0 0 48px;height:48px;border:0;border-radius:50%;background:var(--ink);color:#fff;font-size:1.3rem;cursor:pointer;box-shadow:0 10px 24px rgba(0,0,0,.18)}
 h1{font-size:1.5rem}
 .cdp{background:rgba(255,154,158,.2);color:#ffb3b6}
@@ -381,7 +381,7 @@ button .ix,.cb .ix,.x .ix{margin:0 auto}
   --stamp-pos:left top,left bottom,left top,right top,center;
   --stamp-size:var(--tooth) var(--depth),var(--tooth) var(--depth),var(--depth) var(--tooth),var(--depth) var(--tooth),calc(100% - var(--depth) - var(--depth)) calc(100% - var(--depth) - var(--depth));
   --stamp-rep:repeat-x,repeat-x,repeat-y,repeat-y,no-repeat;
-  position:relative;width:360px !important;height:680px !important;max-height:85vh !important;flex-shrink:0 !important;box-sizing:border-box !important;margin:0 auto;overflow:hidden;display:flex;flex-direction:column;
+  position:relative;width:340px !important;height:540px !important;max-height:70vh !important;flex-shrink:0 !important;box-sizing:border-box !important;margin:20px auto 0 auto;overflow:hidden;display:flex;flex-direction:column;
   z-index:100 !important;
   background:#ffffff !important; /* 純白不透明：底層／背面其他卡片的文字絕對不會透出 */
   -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
@@ -430,11 +430,10 @@ button .ix,.cb .ix,.x .ix{margin:0 auto}
 .pc-big .pc-act .pill{min-height:44px;padding:0 19px;font-size:.88rem}
 body.pcopen{overflow:hidden}
 
-/* ===== 「新增旅程」：右下角固定圓形懸浮按鈕 ===== */
-#t-past .addfab{position:fixed;right:24px;bottom:24px;z-index:900;pointer-events:none}
-#t-past .addfab .pill{position:relative;pointer-events:auto;width:56px;height:56px;min-height:56px;padding:0;border-radius:50%;background:rgba(255,255,255,0.65);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.8);color:var(--ink);font-weight:700;box-shadow:0 14px 30px rgba(90,50,10,.16),0 2px 6px rgba(90,50,10,.06);cursor:pointer;transition:transform .15s,box-shadow .15s;display:flex;align-items:center;justify-content:center;overflow:hidden}
-#t-past .addfab .pill:active{transform:scale(.92)}
-#t-past .addfab .pill span.dot{position:relative;z-index:1;font-size:1.4rem;line-height:1}
+/* ===== 「新增旅程」：右下角固定圓形懸浮按鈕（極簡 + 加號） ===== */
+#t-past .addfab{position:fixed !important;right:24px !important;bottom:24px !important;z-index:999 !important;pointer-events:none}
+#t-past .addfab .pill{position:relative !important;pointer-events:auto;width:56px !important;height:56px !important;min-height:56px !important;padding:0 !important;border-radius:50% !important;background:rgba(255,255,255,0.75) !important;-webkit-backdrop-filter:blur(12px) !important;backdrop-filter:blur(12px) !important;border:1px solid rgba(255,255,255,0.9) !important;color:var(--ink) !important;font-weight:700 !important;box-shadow:0 4px 20px rgba(0,0,0,0.15) !important;cursor:pointer !important;transition:transform .15s,box-shadow .15s !important;display:flex !important;align-items:center !important;justify-content:center !important;overflow:hidden !important;font-size:28px !important;line-height:1 !important}
+#t-past .addfab .pill:active{transform:scale(.92) !important}
 
 /* ===== 「新增旅程」：底部懸浮的透光白色玻璃按鈕 ===== */
 @media(max-width:560px){
