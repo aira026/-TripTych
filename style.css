@@ -391,7 +391,8 @@ button .ix,.cb .ix,.x .ix{margin:0 auto}
   -webkit-mask-repeat:var(--stamp-rep);mask-repeat:var(--stamp-rep);
 }
 /* 正面：文字資訊頁（行程名稱／簡介／心情札記／編輯按鈕），放滿整張明信片 */
-.pc-front{position:relative;flex-grow:1 !important;overflow-y:auto !important;-webkit-overflow-scrolling:touch !important;max-height:400px !important;box-sizing:border-box;padding:28px 26px 30px}
+.pc-front{position:relative;display:flex;flex-direction:column;flex-grow:1 !important;box-sizing:border-box;padding:28px 26px 30px}
+.pc-scroll{flex:1 !important;overflow-y:auto !important;-webkit-overflow-scrolling:touch !important;max-height:calc(680px - 140px) !important}
 .pc-front h3{font-size:1.18rem;font-weight:500;color:var(--ink);line-height:1.35;letter-spacing:.01em;padding-right:34px}
 .pc-meta{margin-top:8px;font-size:.86rem;color:var(--mut)}
 .pc-mates{margin-top:3px;font-size:.86rem;color:var(--mut)}

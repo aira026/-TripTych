@@ -174,12 +174,13 @@ function pcMeta(t){const dateTxt=`${t.startDate||"日期未定"}${t.endDate?" �
  const mates=[...new Set(t.members||[])].map(u=>nameOf(t,u)).map(n=>/^[0-9a-zA-Z]{20,}$/.test(n)?"同行者":n);
  return{dateTxt,mateTxt:mates.length?mates.join("、"):"自行出發"}}
 function pcFront(t,big){const{dateTxt,mateTxt}=pcMeta(t);
- return`<h3>${esc(t.title)}</h3>
+ return`<div class="pc-scroll"><h3>${esc(t.title)}</h3>
   <p class="pc-meta">${flagOf(t)} ${esc(t.country)||"未知國家"}・${esc(dateTxt)}・${nd(t)} 天</p>
   <p class="pc-mates">同行：${esc(mateTxt)}</p>
   <div class="pc-note"><em>心情札記</em><p>${t.notes?esc(t.notes):"還沒有寫下這趟旅程的心情札記…"}</p></div>
   ${t.image?`<img src="${esc(t.image)}" alt="${esc(t.title)} 照片" class="pc-preview" loading="lazy" onerror="this.style.display='none'">`:""}
-  <div class="pills pc-act">${me?`<button class="pill" data-a="edit" data-v="${esc(t.id)}"><i class=i-edit></i> 編輯</button>`:""}${t.spots?.length?`<a class="pill gl" href="https://maps.google.com/?q=${t.spots[0].lat},${t.spots[0].lng}" target="_blank" rel="noopener">地圖</a>`:""}${t.status==="past"?`<button class="pill gl" data-a="setcur" data-v="${esc(t.id)}">設為當前行程</button>`:""}${t.owner===me?.uid?`<button class="pill gl" data-a="del" data-v="${esc(t.id)}"><svg class="ix" viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg> 刪除</button>`:""}</div>`}
+</div>
+<div class="pills pc-act">${me?`<button class="pill" data-a="edit" data-v="${esc(t.id)}"><i class=i-edit></i> 編輯</button>`:""}${t.spots?.length?`<a class="pill gl" href="https://maps.google.com/?q=${t.spots[0].lat},${t.spots[0].lng}" target="_blank" rel="noopener">地圖</a>`:""}${t.status==="past"?`<button class="pill gl" data-a="setcur" data-v="${esc(t.id)}">設為當前行程</button>`:""}${t.owner===me?.uid?`<button class="pill gl" data-a="del" data-v="${esc(t.id)}"><svg class="ix" viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg> 刪除</button>`:""}</div>`}
 /* 總覽：縮小版明信片（只放正面文字頁） */
 function pcard(t){return`<article class="pc-item" data-pid="${esc(t.id)}"><div class="pc-face pc-front">${pcFront(t,false)}</div></article>`}
 /* 聚焦：滿幅明信片（正面 + 背面，可 3D 翻面） */
